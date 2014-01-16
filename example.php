@@ -104,8 +104,8 @@ $table->map(
 		return $cell->row->total;
 	},
 	array(
-		MatrixTable::TYPE_CELL => array(
-			'style' => function($cell) { return 'font-weight: bold;'; }
+		MatrixTable::TYPE_COLUMN => array(
+			'style' => function($column) { return 'font-weight: bold;'; }
 		)
 	)
 );
