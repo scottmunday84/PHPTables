@@ -67,6 +67,18 @@ $table->map(
 	)
 );
 
+$table->map(
+	'even,odd',
+	function($cell)
+	{
+		return $cell->value;
+	},
+	array(
+		MatrixTable::TYPE_CELL => array(
+			'style' => function($cell) { return 'background-color: lightgrey;'; }
+		)
+	)
+);
 
 $table->map(
 	'*,last',

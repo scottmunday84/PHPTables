@@ -181,16 +181,20 @@ class MatrixTable extends Amorphous
 			{
 				$tmp = array($max);
 			}
-			elseif ($selection == 'even') // Even.
-			{
-				$tmp = array(0, $max, 2);
-			}
 			elseif ($selection == 'odd') // Odd.
+			{
+				$tmp = range(0, $max, 2);
+				
+				var_dump($tmp);
+			}
+			elseif ($selection == 'even') // Even.
 			{
 				if ($max != 0)
 				{
-					$tmp = array(1, $max, 2);
+					$tmp = range(1, $max, 2);
 				}
+				
+				var_dump($tmp);
 			}
 			elseif (preg_match('/0|[1-9][0-9]*-0|[1-9][0-9]*/', $selection)) // Range.
 			{
