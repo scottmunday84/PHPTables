@@ -201,7 +201,7 @@ class MatrixTable extends Amorphous
 				
 				$tmp = range($start, $stop);
 			}
-			elseif (preg_match('/[1-9][0-9]*/', $selection)) // Index.
+			elseif (preg_match('/0|[1-9][0-9]*/', $selection)) // Index.
 			{
 				if ($selection >= 0 && $selection <= $max) { $tmp = array($selection); }
 			}
