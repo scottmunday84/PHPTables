@@ -1,6 +1,6 @@
 <?php
 
-class AmorphousViewable
+class Amorphous
 {
 	protected $_values = array();
 	protected $_callbacks = array();
@@ -25,7 +25,7 @@ class AmorphousViewable
 	}	
 };
 
-class MatrixTable extends AmorphousViewable
+class MatrixTable extends Amorphous
 { 
 	protected $_columns = array();
 	protected $_rows = array();
@@ -313,7 +313,7 @@ class MatrixTable extends AmorphousViewable
 	}
 };
 
-class MatrixColumn extends AmorphousViewable 
+class MatrixColumn extends Amorphous 
 { 
 	public $matrix;
 	
@@ -332,7 +332,7 @@ class MatrixColumn extends AmorphousViewable
 };
 
 
-class MatrixRow extends AmorphousViewable 
+class MatrixRow extends Amorphous 
 { 
 	public $matrix;
 	
@@ -350,7 +350,7 @@ class MatrixRow extends AmorphousViewable
 	}
 };
 
-class MatrixCell extends AmorphousViewable 
+class MatrixCell extends Amorphous 
 { 
 	public $matrix;
 	
