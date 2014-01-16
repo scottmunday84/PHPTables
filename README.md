@@ -17,9 +17,8 @@ If you request the member a second, third, etc. time, since the output has alrea
 
 Like the blob, the amorphous data class gives you the town, bit-by-bit.
 
-Amorphous data classes have much more application that my little project, but it has obvious potential in structure of a
-2D grid, where sums, averages, and other calculations are done from the calculation of other smaller calculations. By thinking of
+Amorphous data classes have much more application that my little project, but it has obvious potential in the structure of a 2D grid, where sums, averages, and other calculations are done from the calculation of other smaller calculations. By thinking of
 your larger problem in terms of smaller problems and using amorphous data classes, you can effectively be guaranteed a calculation
-will only occur once during the rendering.
+will only calculate once during the rendering.
 
 I will explain more and expand this more once I see the need, have the desire, and see the interest in the project.
