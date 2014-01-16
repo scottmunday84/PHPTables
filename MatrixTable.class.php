@@ -248,7 +248,7 @@ class MatrixTable extends Amorphous
 				}
 				
 				// Assign attributes.
-				if (isset($attributes[self::TYPE_ROW]) && is_array($attributes[self::TYPE_ROW]))
+				if (!$appliedRowAttributes && isset($attributes[self::TYPE_ROW]) && is_array($attributes[self::TYPE_ROW]))
 				{
 					$this->_assignRenderMapAttributes($this->_renderMap[$this->_columnCount][$yOffset], $attributes[self::TYPE_ROW]);
 				}
