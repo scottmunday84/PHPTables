@@ -184,8 +184,6 @@ class MatrixTable extends Amorphous
 			elseif ($selection == 'odd') // Odd.
 			{
 				$tmp = range(0, $max, 2);
-				
-				var_dump($tmp);
 			}
 			elseif ($selection == 'even') // Even.
 			{
@@ -193,8 +191,6 @@ class MatrixTable extends Amorphous
 				{
 					$tmp = range(1, $max, 2);
 				}
-				
-				var_dump($tmp);
 			}
 			elseif (preg_match('/0|[1-9][0-9]*-0|[1-9][0-9]*/', $selection)) // Range.
 			{
@@ -303,8 +299,8 @@ class MatrixTable extends Amorphous
 				$cell = $this->_build(self::TYPE_CELL, $b, $a); // X x Y
 				
 				echo '<td' . 
-					($this->_processAttributes($this->column($b), $this->_renderMap[$b][$this->_rowCount])) .
 					($this->_processAttributes($cell, array_slice($this->_renderMap[$b][$a], 1))) .
+					($this->_processAttributes($this->column($b), $this->_renderMap[$b][$this->_rowCount])) .
 					'>';
 				echo ($this->_renderMap[$b][$a] ? $this->_renderMap[$b][$a][0]($cell) : '&nbsp;');
 				echo '</td>';
