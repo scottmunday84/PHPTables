@@ -168,7 +168,7 @@ class MatrixTable extends Amorphous
 		foreach ($selections as $selection)
 		{
 			$tmp = array();
-		
+			
 			if ($selection == '*') // All.			
 			{
 				$tmp = range(0, $max);
@@ -192,7 +192,7 @@ class MatrixTable extends Amorphous
 					$tmp = array(1, $max, 2);
 				}
 			}
-			elseif (preg_match('/[1-9][0-9]*-[1-9][0-9]*/', $selection)) // Range.
+			elseif (preg_match('/0|[1-9][0-9]*-0|[1-9][0-9]*/', $selection)) // Range.
 			{
 				list($start, $stop) = explode('-', $selection);
 				

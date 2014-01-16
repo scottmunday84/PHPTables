@@ -1,6 +1,7 @@
 <?php
 
 // An example setup using MatrixTable.
+error_reporting(E_ALL); ini_set('display_errors', 'on');
 
 require_once(dirname(__FILE__) . '/MatrixTable.class.php');
 
@@ -68,10 +69,10 @@ $table->map(
 
 
 $table->map(
-	'*,3',
+	'*,last',
 	function($cell)
 	{
-		$cell->value = $cell->column->total; // Total the column, using callbacks. Guaranteed only once.
+		$cell->value = $cell->column->total; // Total the column, using callbacks. Guaranteed to run only once.
 	
 		return $cell->column->total;
 	},
@@ -83,7 +84,7 @@ $table->map(
 );
 
 $table->map(
-	'6,*',
+	'last,0-2',
 	function($cell)
 	{
 		$cell->value = $cell->row->total; // Total the row, using callbacks. Guaranteed to run only once.
@@ -98,14 +99,14 @@ $table->map(
 );
 
 $table->map(
-	'6,3',
+	'last,last',
 	function($cell)
 	{
 		return ($cell->row->total + $cell->column->total);
 	},
 	array(
 		MatrixTable::TYPE_CELL => array(
-			'style' => function($column) { return 'font-weight: bold;'; }
+			'style' => function($cell) { return 'color: red;'; }
 		)
 	)
 );
