@@ -302,7 +302,7 @@ class MatrixTable extends Amorphous
 					($this->_processAttributes($cell, array_slice($this->_renderMap[$b][$a], 1))) .
 					($this->_processAttributes($this->column($b), $this->_renderMap[$b][$this->_rowCount])) .
 					'>';
-				echo ($this->_renderMap[$b][$a] ? $this->_renderMap[$b][$a][0]($cell) : '&nbsp;');
+				echo htmlentities($this->_renderMap[$b][$a] ? $this->_renderMap[$b][$a][0]($cell) : '&nbsp;');
 				echo '</td>';
 			}			
 			
