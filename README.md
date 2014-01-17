@@ -59,16 +59,14 @@ To render cells within the table, you map to a cell selection. The selection is 
 
 ```php
 $table->map(
-	'even,odd',
+	'*,last',
 	function($cell)
 	{
-		$cell->value; // Still calculate.
-		
-		return '';
+		return ($cell->value = $cell->column->total); // Total the column, using callbacks. Guaranteed to run only once.
 	},
 	array(
 		MatrixTable::TYPE_CELL => array(
-			'style' => function($cell) { return 'background-color: lightgrey;'; }
+			'style' => function($row) { return 'font-weight: bold;'; }
 		)
 	)
 );
