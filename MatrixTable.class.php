@@ -60,9 +60,9 @@ class MatrixTable extends Amorphous
 			
 			for ($b = 0; $b <= $this->_rowCount; ++$b)
 			{
-				$this->_renderMap[$a][$b] = null;
+				$this->_renderMap[$a][$b] = array(self::RENDER => null);
 			}
-		}
+		}		
 	}
 	
 	private function _build($type)
@@ -263,8 +263,6 @@ class MatrixTable extends Amorphous
 		{
 			foreach ($y as $yOffset)
 			{
-				$this->_renderMap[$xOffset][$yOffset] = array();	
-
 				$this->_assignRenderMapRender($this->_renderMap[$xOffset][$yOffset][self::RENDER], $callback);
 				
 				// Assign attributes.
@@ -305,9 +303,12 @@ class MatrixTable extends Amorphous
 		{
 			foreach ($attributes as $attribute => $callbacks)
 			{
-				foreach ($callbacks as $callback)
+				if (is_array($callbacks))
 				{
-					$rtn[$attribute] = $callback($element, @$rtn[$attribute]);
+					foreach ($callbacks as $callback)
+					{
+						$rtn[$attribute] = $callback($element, @$rtn[$attribute]);
+					}
 				}
 			}
 		}
@@ -338,7 +339,7 @@ class MatrixTable extends Amorphous
 	public function _render($element, $renders)
 	{
 		$rtn = '';
-			
+		
 		foreach ($renders as $render)
 		{
 			$rtn = $render($element, $rtn);
