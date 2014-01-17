@@ -57,6 +57,42 @@ This would select the 6th column and 3rd row assuming they both exist. There is 
 
 ### Example
 
+<table border="1">
+	<tr>
+		<td colspan="1" rowspan="1">0</td>
+		<td colspan="1" rowspan="1" style="background-color: lightgrey !important;"></td>
+		<td colspan="1" rowspan="1">2</td>
+		<td colspan="1" rowspan="1" style="background-color: lightgrey !important;"></td>
+		<td colspan="1" rowspan="1">4</td>
+		<td colspan="1" rowspan="1" style="background-color: lightgrey !important;"></td>
+		<td colspan="1" rowspan="1" style="font-weight: bold;">15</td>
+	</tr>
+	<tr>
+		<td colspan="1" rowspan="1">6</td>
+		<td colspan="1" rowspan="1">7</td>
+		<td colspan="1" rowspan="1">8</td>
+		<td colspan="1" rowspan="1">9</td>
+		<td colspan="2" rowspan="2">10</td>
+		<td colspan="1" rowspan="1" style="font-weight: bold !important;">51</td>
+	</tr>
+	<tr>
+		<td colspan="1" rowspan="1">12</td>
+		<td colspan="1" rowspan="1" style="background-color: lightgrey !important;"></td>
+		<td colspan="1" rowspan="1">14</td>
+		<td colspan="1" rowspan="1" style="background-color: lightgrey !important;"></td>
+		<td colspan="1" rowspan="1" style="font-weight: bold !important;">87</td>
+	</tr>
+	<tr style="font-weight: bold !important;">
+		<td colspan="1" rowspan="1">18</td>
+		<td colspan="1" rowspan="1">21</td>
+		<td colspan="1" rowspan="1">24</td>
+		<td colspan="1" rowspan="1">27</td>
+		<td colspan="1" rowspan="1">30</td>
+		<td colspan="1" rowspan="1">33</td>
+		<td colspan="1" rowspan="1" style="color: red !important;" style="font-weight: bold;">306</td>
+	</tr>
+</table>
+
 ```php
 $table->map(
 	'even,odd',
@@ -74,7 +110,11 @@ $table->map(
 
 ## Example
 
+
+
 ```php
+<?php
+
 // An example setup using MatrixTable.
 require_once(dirname(__FILE__) . '/MatrixTable.class.php');
 
@@ -91,7 +131,7 @@ $table->callback(
 	'value',
 	function($cell) use ($data)
 	{
-		return $data[$cell->row->index][$cell->column->index];
+		return @$data[$cell->row->index][$cell->column->index];
 	}
 );
 
@@ -106,7 +146,7 @@ $table->callback(
 		{
 			$total += $column->table->cell($column->index, $i)->value;
 		}
-			
+		
 		return $total;
 	}
 );
@@ -122,7 +162,7 @@ $table->callback(
 		{
 			$total += $row->table->cell($i, $row->index)->value;
 		}
-			
+		
 		return $total;
 	}
 );
@@ -144,7 +184,9 @@ $table->map(
 	'even,odd',
 	function($cell)
 	{
-		return $cell->value;
+		$cell->value; // Still calculate.
+		
+		return '';
 	},
 	array(
 		MatrixTable::TYPE_CELL => array(
@@ -195,6 +237,9 @@ $table->map(
 		)
 	)
 );
+
+// Expand a column.
+$table->cell(4, 1)->expand(2, 2);
 
 $table->render();
 ```
