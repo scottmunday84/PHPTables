@@ -108,11 +108,11 @@ GitHub strips out all styling associated with HTML tags. Run the example on your
 <table border="1">
 	<tr>
 		<td colspan="1" rowspan="1">0</td>
-		<td colspan="1" rowspan="1" style="background-color: lightgrey;"></td>
+		<td colspan="1" rowspan="1" style="background-color: lightgrey;">&nbsp;</td>
 		<td colspan="1" rowspan="1">2</td>
-		<td colspan="1" rowspan="1" style="background-color: lightgrey;"></td>
+		<td colspan="1" rowspan="1" style="background-color: lightgrey;">&nbsp;</td>
 		<td colspan="1" rowspan="1">4</td>
-		<td colspan="1" rowspan="1" style="background-color: lightgrey;"></td>
+		<td colspan="1" rowspan="1" style="background-color: lightgrey;">&nbsp;</td>
 		<td colspan="1" rowspan="1" style="font-weight: bold;">15</td>
 	</tr>
 	<tr>
@@ -125,9 +125,9 @@ GitHub strips out all styling associated with HTML tags. Run the example on your
 	</tr>
 	<tr>
 		<td colspan="1" rowspan="1">12</td>
-		<td colspan="1" rowspan="1" style="background-color: lightgrey;"></td>
+		<td colspan="1" rowspan="1" style="background-color: lightgrey;">&nbsp;</td>
 		<td colspan="1" rowspan="1">14</td>
-		<td colspan="1" rowspan="1" style="background-color: lightgrey;"></td>
+		<td colspan="1" rowspan="1" style="background-color: lightgrey;">&nbsp;</td>
 		<td colspan="1" rowspan="1" style="font-weight: bold;">87</td>
 	</tr>
 	<tr style="font-weight: bold;">
@@ -137,7 +137,7 @@ GitHub strips out all styling associated with HTML tags. Run the example on your
 		<td colspan="1" rowspan="1">27</td>
 		<td colspan="1" rowspan="1">30</td>
 		<td colspan="1" rowspan="1">33</td>
-		<td colspan="1" rowspan="1" style="color: red;" style="font-weight: bold;">306</td>
+		<td colspan="1" rowspan="1" style="color: red;">306</td>
 	</tr>
 </table>
 
@@ -238,29 +238,27 @@ $table->map(
 );
 
 $table->map(
-	'last,0-2',
+	'*,last',
 	function($cell)
 	{
-		$cell->value = $cell->row->total; // Total the row, using callbacks. Guaranteed to run only once.
-	
-		return $cell->row->total;
+		return ($cell->value = $cell->column->total); // Total the column, using callbacks. Guaranteed to run only once.
 	},
 	array(
-		MatrixTable::TYPE_COLUMN => array(
-			'style' => function($column) { return 'font-weight: bold;'; }
+		MatrixTable::TYPE_ROW => array(
+			'style' => function($row) { return 'font-weight: bold;'; }
 		)
 	)
 );
 
 $table->map(
-	'last,last',
+	'last,0-2',
 	function($cell)
 	{
-		return ($cell->row->total + $cell->column->total);
+		return ($cell->value = $cell->row->total); // Total the row, using callbacks. Guaranteed to run only once.
 	},
 	array(
-		MatrixTable::TYPE_CELL => array(
-			'style' => function($cell) { return 'color: red;'; }
+		MatrixTable::TYPE_COLUMN => array(
+			'style' => function($column) { return 'font-weight: bold;'; }
 		)
 	)
 );
