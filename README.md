@@ -78,38 +78,37 @@ GitHub strips out all styling associated with HTML tags. Run the example on your
 
 <table border="1">
 	<tr>
-		<td colspan="1" rowspan="1" >0		</td>
-		<td colspan="1" rowspan="1"  style="background-color: lightgrey;">1		</td>
-		<td colspan="1" rowspan="1" >2		</td>
-		<td colspan="1" rowspan="1"  style="background-color: lightgrey;">3		</td>
-		<td colspan="1" rowspan="1" >4		</td>
-		<td colspan="1" rowspan="1"  style="background-color: lightgrey;">5		</td>
-		<td colspan="1" rowspan="1"  style="font-weight: bold;">15		</td>
+		<td colspan="1" rowspan="1">0</td>
+		<td colspan="1" rowspan="1" style="background-color: lightgrey;"></td>
+		<td colspan="1" rowspan="1">2</td>
+		<td colspan="1" rowspan="1" style="background-color: lightgrey;"></td>
+		<td colspan="1" rowspan="1">4</td>
+		<td colspan="1" rowspan="1" style="background-color: lightgrey;"></td>
+		<td colspan="1" rowspan="1" style="font-weight: bold;">15</td>
 	</tr>
 	<tr>
-		<td colspan="1" rowspan="1" >6		</td>
-		<td colspan="1" rowspan="1" >7		</td>
-		<td colspan="1" rowspan="1" >8		</td>
-		<td colspan="1" rowspan="1" >9		</td>
-		<td colspan="2" rowspan="2" >10		</td>
+		<td colspan="1" rowspan="1">6</td>
+		<td colspan="1" rowspan="1">7</td>
+		<td colspan="1" rowspan="1">8</td>
+		<td colspan="1" rowspan="1">9</td>
+		<td colspan="2" rowspan="2">10</td>
+		<td colspan="1" rowspan="1" style="font-weight: bold;">51</td>
 	</tr>
 	<tr>
-		<td colspan="1" rowspan="1" >12		</td>
-		<td colspan="1" rowspan="1"  style="background-color: lightgrey;">13		</td>
-		<td colspan="1" rowspan="1" >14		</td>
-		<td colspan="1" rowspan="1"  style="background-color: lightgrey;">15		</td>
-		<td colspan="1" rowspan="1" >16		</td>
-		<td colspan="1" rowspan="1"  style="background-color: lightgrey;">17		</td>
-		<td colspan="1" rowspan="1"  style="font-weight: bold;">87		</td>
+		<td colspan="1" rowspan="1">12</td>
+		<td colspan="1" rowspan="1" style="background-color: lightgrey;"></td>
+		<td colspan="1" rowspan="1">14</td>
+		<td colspan="1" rowspan="1" style="background-color: lightgrey;"></td>
+		<td colspan="1" rowspan="1" style="font-weight: bold;">87</td>
 	</tr>
 	<tr style="font-weight: bold;">
-		<td colspan="1" rowspan="1" >18		</td>
-		<td colspan="1" rowspan="1" >21		</td>
-		<td colspan="1" rowspan="1" >24		</td>
-		<td colspan="1" rowspan="1" >27		</td>
-		<td colspan="1" rowspan="1" >30		</td>
-		<td colspan="1" rowspan="1" >33		</td>
-		<td colspan="1" rowspan="1"  style="color: red;" style="font-weight: bold;">255		</td>
+		<td colspan="1" rowspan="1">18</td>
+		<td colspan="1" rowspan="1">21</td>
+		<td colspan="1" rowspan="1">24</td>
+		<td colspan="1" rowspan="1">27</td>
+		<td colspan="1" rowspan="1">30</td>
+		<td colspan="1" rowspan="1">33</td>
+		<td colspan="1" rowspan="1" style="color: red;" style="font-weight: bold;">306</td>
 	</tr>
 </table>
 
