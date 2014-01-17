@@ -47,8 +47,8 @@ class MatrixTable extends Amorphous
 	
 	function __construct($columns, $rows)
 	{
-		$this->_columnCount = ($columns < 0 ? 1 : $columns);
-		$this->_rowCount = ($rows < 0 ? 1 : $rows);		
+		$this->_columnCount = ($columns <= 0 ? 1 : (int)$columns);
+		$this->_rowCount = ($rows <= 0 ? 1 : (int)$rows);		
 		
 		for ($a = 0; $a <= $this->_columnCount; ++$a)
 		{
@@ -117,6 +117,8 @@ class MatrixTable extends Amorphous
 	{
 		switch ($type)
 		{
+			case self::TYPE_TABLE:
+				return $this->_callbacks;
 			case self::TYPE_COLUMN:
 				return $this->_columnCallbacks;
 			case self::TYPE_ROW:
@@ -134,6 +136,9 @@ class MatrixTable extends Amorphous
 		{
 			switch ($type)
 			{
+				case self::TYPE_TABLE:
+					$this->_callbacks[$property] = $callback;
+					break;			
 				case self::TYPE_COLUMN:
 					$this->_columnCallbacks[$property] = $callback;
 					break;
@@ -288,28 +293,45 @@ class MatrixTable extends Amorphous
 	
 	public function render()
 	{	
-		echo '<table' . $this->_processAttributes($this, $this->_renderMap[$this->_columnCount][$this->_rowCount]) . '>';
+		echo '<table' . $this->_processAttributes($this, $this->_renderMap[$this->_columnCount][$this->_rowCount]) . '>' . PHP_EOL;
 		
 		for ($a = 0; $a < $this->_rowCount; ++$a)
 		{
-			echo '<tr' . $this->_processAttributes($this->row($a), $this->_renderMap[$this->_columnCount][$a]) . '>';
+			echo "\t" . '<tr' . $this->_processAttributes($this->row($a), $this->_renderMap[$this->_columnCount][$a]) . '>' . PHP_EOL;
 		
 			for ($b = 0; $b < $this->_columnCount; ++$b)
 			{
 				$cell = $this->_build(self::TYPE_CELL, $b, $a); // X x Y
 				
-				echo '<td' . 
-					($this->_processAttributes($cell, array_slice($this->_renderMap[$b][$a], 1))) .
-					($this->_processAttributes($this->column($b), $this->_renderMap[$b][$this->_rowCount])) .
-					'>';
-				echo ($this->_renderMap[$b][$a] ? htmlentities($this->_renderMap[$b][$a][0]($cell)) : '&nbsp;');
-				echo '</td>';
-			}			
+				if ($this->_renderMap[$b][$a][0] != null)
+				{
+					echo "\t\t" . '<td colspan="' . htmlentities($cell->columns) . '" rowspan="' . htmlentities($cell->rows) . '"' . 
+						($this->_processAttributes($cell, array_slice($this->_renderMap[$b][$a], 1))) .
+						($this->_processAttributes($this->column($b), $this->_renderMap[$b][$this->_rowCount])) .
+						'>';
+					echo ($this->_renderMap[$b][$a] ? htmlentities($this->_renderMap[$b][$a][0]($cell)) : '&nbsp;');
+					echo '</td>' . PHP_EOL;
+					
+					// Map to the cell expansion.
+					for ($c = $a, $d = min($this->_rowCount, $c + $cell->rows); $c < $d; ++$c)
+					{
+						for ($e = $b, $f = min($this->_columnCount, $e + $cell->columns); $e < $f; ++$e)
+						{						
+							if ($c == $a && $e == $b) { continue; }
+							
+							$childCell = $this->_build(self::TYPE_CELL, $e, $c);
+														
+							$this->_renderMap[$e][$c][0]($childCell);
+							$this->_renderMap[$e][$c][0] = null;
+						}
+					}					
+				}
+			}
 			
-			echo '</tr>';
+			echo "\t" . '</tr>' . PHP_EOL;			
 		}
 		
-		echo '</table>';
+		echo '</table>' . PHP_EOL;
 	}
 };
 
@@ -357,6 +379,9 @@ class MatrixCell extends Amorphous
 	public $column;
 	public $row;
 	
+	public $rows = 1;
+	public $columns = 1;
+	
 	function __construct($table, $column, $row)
 	{
 		$this->table = $table;
@@ -365,5 +390,11 @@ class MatrixCell extends Amorphous
 		$this->row = $row;
 		
 		$this->_callbacks = $table->callbacks(MatrixTable::TYPE_CELL);					
-	}	
+	}
+
+	public function expand($columns = 1, $rows = 1)
+	{
+		$this->columns = ($columns <= 0 ? 1 : (int)$columns);
+		$this->rows = ($rows <= 0 ? 1 : (int)$rows);
+	}
 };
