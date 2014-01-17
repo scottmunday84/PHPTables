@@ -41,19 +41,19 @@ $table->callback(
 
 ## Mapping
 
-To render cells within the table, you use a mapping function that maps to a selection. The selection is a string, separated by a comma (,) to split the column (x) value by the row (y) starting at 0 for each dimension. For example:
+To render cells within the table, you map to a cell selection. The selection is a string separated by a comma (,) to split the column (x) selection by the row (y) selection. Indices start at 0 in either dimension. For example:
 
 "5,3"
 
-This would select the 6th column and 3rd row assuming they both exist. There is a selection language shorthand available to help ease the selection of your desired mapped cells.
+...would select the cell at index 5 (6th column) and index 3 (4th row), assuming the cell exists on the table. A selection language shorthand has been built for convenience.
 
 * first: First column/row.
 * last: Last column/row.
 * even: Even column/row(s).
 * odd: Odd column/row(s).
-* #-#: A range. Use indices in replace of the pound sign (#).
+* #-#: A range, using indices in replace of the pound sign (#).
 * #: An index in replace of the pound sign (#).
-* ;: A dimension separator. Allows you to group multiple selections within one dimension.
+* ;: A selection separator. Allows you to group multiple selections into one selection.
 
 ### Example
 
@@ -62,7 +62,9 @@ $table->map(
 	'even,odd',
 	function($cell)
 	{
-		return $cell->value;
+		$cell->value; // Still calculate.
+		
+		return '';
 	},
 	array(
 		MatrixTable::TYPE_CELL => array(
