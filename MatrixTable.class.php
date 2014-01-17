@@ -379,10 +379,10 @@ class MatrixTable extends Amorphous
 							if ($c == $a && $e == $b) { continue; }
 							
 							$childCell = $this->_build(self::TYPE_CELL, $e, $c);
-														
+							
 							if (is_array($this->_renderMap[$e][$c][self::RENDER]))
 							{
-								$this->_render($cell, $this->_renderMap[$e][$c][self::RENDER]);
+								$this->_render($childCell, $this->_renderMap[$e][$c][self::RENDER]);
 							}
 							
 							$this->_renderMap[$e][$c][self::RENDER] = self::SKIP;
