@@ -1,4 +1,5 @@
 <?php
+namespace MatrixTables;
 
 class Amorphous
 {
@@ -25,7 +26,70 @@ class Amorphous
 	}	
 };
 
-class MatrixTable extends Amorphous
+class Column extends Amorphous 
+{ 
+	public $table;
+	
+	public $index;
+	public $rows;	
+
+	function __construct($table, $column, $rows)
+	{
+		$this->table = $table;
+		
+		$this->index = $column;		
+		$this->rows = $rows;		
+
+		$this->_callbacks = $table->callbacks(Table::TYPE_COLUMN);			
+	}
+};
+
+class Row extends Amorphous 
+{ 
+	public $table;
+	
+	public $index;
+	public $columns;
+	
+	function __construct($table, $row, $columns)
+	{
+		$this->table = $table;
+				
+		$this->index = $row;
+		$this->columns = $columns;		
+
+		$this->_callbacks = $table->callbacks(Table::TYPE_ROW);							
+	}
+};
+
+class Cell extends Amorphous 
+{ 
+	public $table;
+	
+	public $column;
+	public $row;
+	
+	public $rows = 1;
+	public $columns = 1;
+	
+	function __construct($table, $column, $row)
+	{
+		$this->table = $table;
+		
+		$this->column = $column;
+		$this->row = $row;
+		
+		$this->_callbacks = $table->callbacks(Table::TYPE_CELL);					
+	}
+
+	public function expand($columns = 1, $rows = 1)
+	{
+		$this->columns = ($columns <= 0 ? 1 : (int)$columns);
+		$this->rows = ($rows <= 0 ? 1 : (int)$rows);
+	}
+};
+
+class Table extends Amorphous
 { 
 	protected $_columns = array();
 	protected $_rows = array();
@@ -74,7 +138,7 @@ class MatrixTable extends Amorphous
 				
 				if (!isset($this->_columns[$column]))
 				{
-					$this->_columns[$column] = new MatrixColumn($this, $column, $this->_rowCount);
+					$this->_columns[$column] = new Column($this, $column, $this->_rowCount);
 				}				
 				
 				return $this->_columns[$column];
@@ -83,7 +147,7 @@ class MatrixTable extends Amorphous
 				
 				if (!isset($this->_rows[$row]))
 				{
-					$this->_rows[$row] = new MatrixRow($this, $row, $this->_columnCount);
+					$this->_rows[$row] = new Row($this, $row, $this->_columnCount);
 				}				
 
 				return $this->_rows[$row];
@@ -95,7 +159,7 @@ class MatrixTable extends Amorphous
 				
 				if (!isset($this->_cells[$column][$row]))
 				{
-					$this->_cells[$column][$row] = new MatrixCell($this, $_column, $_row);
+					$this->_cells[$column][$row] = new Cell($this, $_column, $_row);
 				}				
 				
 				return $this->_cells[$column][$row];
@@ -395,68 +459,5 @@ class MatrixTable extends Amorphous
 		}
 		
 		echo '</table>' . PHP_EOL;
-	}
-};
-
-class MatrixColumn extends Amorphous 
-{ 
-	public $matrix;
-	
-	public $index;
-	public $rows;	
-
-	function __construct($table, $column, $rows)
-	{
-		$this->table = $table;
-		
-		$this->index = $column;		
-		$this->rows = $rows;		
-
-		$this->_callbacks = $table->callbacks(MatrixTable::TYPE_COLUMN);			
-	}
-};
-
-class MatrixRow extends Amorphous 
-{ 
-	public $matrix;
-	
-	public $index;
-	public $columns;
-	
-	function __construct($table, $row, $columns)
-	{
-		$this->table = $table;
-				
-		$this->index = $row;
-		$this->columns = $columns;		
-
-		$this->_callbacks = $table->callbacks(MatrixTable::TYPE_ROW);							
-	}
-};
-
-class MatrixCell extends Amorphous 
-{ 
-	public $matrix;
-	
-	public $column;
-	public $row;
-	
-	public $rows = 1;
-	public $columns = 1;
-	
-	function __construct($table, $column, $row)
-	{
-		$this->table = $table;
-		
-		$this->column = $column;
-		$this->row = $row;
-		
-		$this->_callbacks = $table->callbacks(MatrixTable::TYPE_CELL);					
-	}
-
-	public function expand($columns = 1, $rows = 1)
-	{
-		$this->columns = ($columns <= 0 ? 1 : (int)$columns);
-		$this->rows = ($rows <= 0 ? 1 : (int)$rows);
 	}
 };
