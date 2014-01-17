@@ -108,11 +108,11 @@ GitHub strips out all styling associated with HTML tags. Run the example on your
 <table border="1">
 	<tr>
 		<td colspan="1" rowspan="1">0</td>
-		<td colspan="1" rowspan="1" style="background-color: lightgrey;"></td>
+		<td colspan="1" rowspan="1" style="background-color: lightgrey;">&nbsp;</td>
 		<td colspan="1" rowspan="1">2</td>
-		<td colspan="1" rowspan="1" style="background-color: lightgrey;"></td>
+		<td colspan="1" rowspan="1" style="background-color: lightgrey;">&nbsp;</td>
 		<td colspan="1" rowspan="1">4</td>
-		<td colspan="1" rowspan="1" style="background-color: lightgrey;"></td>
+		<td colspan="1" rowspan="1" style="background-color: lightgrey;">&nbsp;</td>
 		<td colspan="1" rowspan="1" style="font-weight: bold;">15</td>
 	</tr>
 	<tr>
@@ -125,9 +125,9 @@ GitHub strips out all styling associated with HTML tags. Run the example on your
 	</tr>
 	<tr>
 		<td colspan="1" rowspan="1">12</td>
-		<td colspan="1" rowspan="1" style="background-color: lightgrey;"></td>
+		<td colspan="1" rowspan="1" style="background-color: lightgrey;">&nbsp;</td>
 		<td colspan="1" rowspan="1">14</td>
-		<td colspan="1" rowspan="1" style="background-color: lightgrey;"></td>
+		<td colspan="1" rowspan="1" style="background-color: lightgrey;">&nbsp;</td>
 		<td colspan="1" rowspan="1" style="font-weight: bold;">87</td>
 	</tr>
 	<tr style="font-weight: bold;">
@@ -137,7 +137,7 @@ GitHub strips out all styling associated with HTML tags. Run the example on your
 		<td colspan="1" rowspan="1">27</td>
 		<td colspan="1" rowspan="1">30</td>
 		<td colspan="1" rowspan="1">33</td>
-		<td colspan="1" rowspan="1" style="color: red;" style="font-weight: bold;">306</td>
+		<td colspan="1" rowspan="1" style="color: red;">306</td>
 	</tr>
 </table>
 
