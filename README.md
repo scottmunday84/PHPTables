@@ -68,7 +68,7 @@ $table->map(
 );
 ```
 
-Mapping render/attribute callbacks cascade downward, so effectively you can map one selection, and map on top of it, and return the combination of their results. As well, cell attributes override column attributes. When in doubt use MatrixTable::TYPE_CELL.
+Mapping render/attribute callbacks cascade downward, so effectively you can map one selection, map over it, and return the combination of their results. As well cell attributes override any of the same column attributes applied. When in doubt use MatrixTable::TYPE_CELL.
 
 ## Selecting Columns, Rows, and Cells
 
