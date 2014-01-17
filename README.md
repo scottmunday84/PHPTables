@@ -34,7 +34,7 @@ $table->callback(
 	'value',
 	function($cell) use ($data)
 	{
-		return $data[$cell->row->index][$cell->column->index];
+		return @$data[$cell->row->index][$cell->column->index];
 	}
 );
 ```
