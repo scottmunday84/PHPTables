@@ -41,11 +41,7 @@ $table->callback(
 
 ## Mapping
 
-To render cells within the table, you map to a cell selection. The selection is a string separated by a comma (,) to split the column (x) selection by the row (y) selection. Indices start at 0 in either dimension. For example:
-
-"5,3"
-
-...would select the cell at index 5 (6th column) and index 3 (4th row), assuming the cell exists on the table. A selection language shorthand has been built for convenience.
+To render cells within the table, you map to a cell selection. The selection is a string separated by a comma (,) to split the column (x) selection by the row (y) selection. Indices start at 0 in either dimension. For example the selection "5,3" selects the cell at index 5 (6th column) and index 3 (4th row), assuming the cell exists on the table. A selection language shorthand has been built for convenience.
 
 * first: First column/row.
 * last: Last column/row.
@@ -72,7 +68,7 @@ $table->map(
 );
 ```
 
-Mapping render/attribute callbacks cascade downward, so effectively you can map one selection, and map on top of it, and return the combination of their results.
+Mapping render/attribute callbacks cascade downward, so effectively you can map one selection, and map on top of it, and return the combination of their results. As well, cell attributes override column attributes. When in doubt use MatrixTable::TYPE_CELL.
 
 ## Selecting Columns, Rows, and Cells
 
