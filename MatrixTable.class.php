@@ -416,7 +416,6 @@ class MatrixColumn extends Amorphous
 	}
 };
 
-
 class MatrixRow extends Amorphous 
 { 
 	public $matrix;
