@@ -238,29 +238,27 @@ $table->map(
 );
 
 $table->map(
-	'last,0-2',
+	'*,last',
 	function($cell)
 	{
-		$cell->value = $cell->row->total; // Total the row, using callbacks. Guaranteed to run only once.
-	
-		return $cell->row->total;
+		return ($cell->value = $cell->column->total); // Total the column, using callbacks. Guaranteed to run only once.
 	},
 	array(
-		MatrixTable::TYPE_COLUMN => array(
-			'style' => function($column) { return 'font-weight: bold;'; }
+		MatrixTable::TYPE_ROW => array(
+			'style' => function($row) { return 'font-weight: bold;'; }
 		)
 	)
 );
 
 $table->map(
-	'last,last',
+	'last,0-2',
 	function($cell)
 	{
-		return ($cell->row->total + $cell->column->total);
+		return ($cell->value = $cell->row->total); // Total the row, using callbacks. Guaranteed to run only once.
 	},
 	array(
-		MatrixTable::TYPE_CELL => array(
-			'style' => function($cell) { return 'color: red;'; }
+		MatrixTable::TYPE_COLUMN => array(
+			'style' => function($column) { return 'font-weight: bold;'; }
 		)
 	)
 );
