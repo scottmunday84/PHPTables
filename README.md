@@ -21,16 +21,18 @@ I will delve more into the topic once I see the need, have the desire, and see a
 
 Amorphous data classes, as mentioned, use callbacks to initiate its data. Create a callback to setup a callback on a table, column, row, or cell.
 
-* MatrixTable::TYPE_TABLE
-* MatrixTable::TYPE_COLUMN
-* MatrixTable::TYPE_ROW
-* MatrixTable::TYPE_CELL
+* MatrixTables\TYPE_TABLE
+* MatrixTables\TYPE_COLUMN
+* MatrixTables\TYPE_ROW
+* MatrixTables\TYPE_CELL
 
 ### Example
 
 ```php
+use MatrixTables as MT;
+
 $table->callback(
-	MatrixTable::TYPE_CELL, 
+	MT\TYPE_CELL, 
 	'value',
 	function($cell) use ($data)
 	{
@@ -54,6 +56,8 @@ To render cells within the table, you map to a cell selection. The selection is 
 ### Example
 
 ```php
+use MatrixTables as MT;
+
 $table->map(
 	'*,last',
 	function($cell)
@@ -61,14 +65,14 @@ $table->map(
 		return ($cell->value = $cell->column->total); // Total the column, using callbacks. Guaranteed to run only once.
 	},
 	array(
-		MatrixTable::TYPE_CELL => array(
+		MT\TYPE_CELL => array(
 			'style' => function($row) { return 'font-weight: bold;'; }
 		)
 	)
 );
 ```
 
-Mapping render/attribute callbacks cascade downward, so effectively you can map one selection, map over it, and return the combination of their results. As well cell attributes override any of the same column attributes applied. When in doubt use MatrixTable::TYPE_CELL.
+Mapping render/attribute callbacks cascade downward, so effectively you can map one selection, map over it, and return the combination of their results. As well cell attributes override any of the same column attributes applied. When in doubt use MatrixTables\TYPE_CELL.
 
 ## Selecting Columns, Rows, and Cells
 
@@ -138,8 +142,10 @@ GitHub strips out all styling associated with HTML tags. Run the example on your
 </table>
 
 ```php
+
 // An example setup using MatrixTable.
-require_once(dirname(__FILE__) . '/MatrixTables/MatrixTable.class.php');
+require_once(dirname(__FILE__) . '/MatrixTables/include.php');
+use MatrixTables as MT;
 
 $data = array(
 	array(0, 1, 2, 3, 4, 5),
@@ -147,10 +153,10 @@ $data = array(
 	array(12, 13, 14, 15, 16, 17)
 );
 
-$table = new MatrixTable(7, 4); // X x Y
+$table = new MT\Table(7, 4); // X x Y
 
 $table->callback(
-	MatrixTable::TYPE_CELL, 
+	MT\TYPE_CELL, 
 	'value',
 	function($cell) use ($data)
 	{
@@ -159,7 +165,7 @@ $table->callback(
 );
 
 $table->callback(
-	MatrixTable::TYPE_COLUMN, 
+	MT\TYPE_COLUMN, 
 	'total',
 	function($column)
 	{
@@ -175,7 +181,7 @@ $table->callback(
 );
 
 $table->callback(
-	MatrixTable::TYPE_ROW, 
+	MT\TYPE_ROW, 
 	'total',
 	function($row)
 	{
@@ -197,7 +203,7 @@ $table->map(
 		return $cell->value;
 	},
 	array(
-		MatrixTable::TYPE_TABLE => array(
+		MT\TYPE_TABLE => array(
 			'border' => function($table) { return '1'; }
 		)
 	)
@@ -207,7 +213,7 @@ $table->map(
 	'even,odd',
 	null,
 	array(
-		MatrixTable::TYPE_CELL => array(
+		MT\TYPE_CELL => array(
 			'style' => function($cell) { return 'background-color: lightgrey;'; }
 		)
 	)
@@ -220,7 +226,7 @@ $table->map(
 		return ($cell->value = $cell->column->total); // Total the column, using callbacks. Guaranteed to run only once.
 	},
 	array(
-		MatrixTable::TYPE_CELL => array(
+		MT\TYPE_CELL => array(
 			'style' => function($row) { return 'font-weight: bold;'; }
 		)
 	)
@@ -233,7 +239,7 @@ $table->map(
 		return ($cell->value = $cell->row->total); // Total the row, using callbacks. Guaranteed to run only once.
 	},
 	array(
-		MatrixTable::TYPE_CELL => array(
+		MT\TYPE_CELL => array(
 			'style' => function($cell) { return 'font-weight: bold;'; }
 		)
 	)
@@ -246,7 +252,7 @@ $table->map(
 		return ($cell->row->total + $cell->column->total);
 	},
 	array(
-		MatrixTable::TYPE_CELL => array(
+		MT\TYPE_CELL => array(
 			'style' => function($cell, $render) { return $render . ' color: red;'; }
 		)
 	)
