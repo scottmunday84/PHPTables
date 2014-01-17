@@ -238,7 +238,7 @@ $table->map(
 	)
 );
 
-// Expand a column.
+// Expand a cell across rows and columns.
 $table->cell(4, 1)->expand(2, 2);
 
 $table->render();
