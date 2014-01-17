@@ -41,11 +41,7 @@ $table->callback(
 
 ## Mapping
 
-To render cells within the table, you map to a cell selection. The selection is a string separated by a comma (,) to split the column (x) selection by the row (y) selection. Indices start at 0 in either dimension. For example:
-
-"5,3"
-
-...would select the cell at index 5 (6th column) and index 3 (4th row), assuming the cell exists on the table. A selection language shorthand has been built for convenience.
+To render cells within the table, you map to a cell selection. The selection is a string separated by a comma (,) to split the column (x) selection by the row (y) selection. Indices start at 0 in either dimension. For example the selection "5,3" selects the cell at index 5 (6th column) and index 3 (4th row), assuming the cell exists on the table. A selection language shorthand has been built for convenience.
 
 * first: First column/row.
 * last: Last column/row.
@@ -59,20 +55,20 @@ To render cells within the table, you map to a cell selection. The selection is 
 
 ```php
 $table->map(
-	'even,odd',
+	'*,last',
 	function($cell)
 	{
-		$cell->value; // Still calculate.
-		
-		return '';
+		return ($cell->value = $cell->column->total); // Total the column, using callbacks. Guaranteed to run only once.
 	},
 	array(
 		MatrixTable::TYPE_CELL => array(
-			'style' => function($cell) { return 'background-color: lightgrey;'; }
+			'style' => function($row) { return 'font-weight: bold;'; }
 		)
 	)
 );
 ```
+
+Mapping render/attribute callbacks cascade downward, so effectively you can map one selection, map over it, and return the combination of their results. As well cell attributes override any of the same column attributes applied. When in doubt use MatrixTable::TYPE_CELL.
 
 ## Selecting Columns, Rows, and Cells
 
@@ -108,11 +104,11 @@ GitHub strips out all styling associated with HTML tags. Run the example on your
 <table border="1">
 	<tr>
 		<td colspan="1" rowspan="1">0</td>
-		<td colspan="1" rowspan="1" style="background-color: lightgrey;">&nbsp;</td>
+		<td colspan="1" rowspan="1" style="background-color: lightgrey;">1</td>
 		<td colspan="1" rowspan="1">2</td>
-		<td colspan="1" rowspan="1" style="background-color: lightgrey;">&nbsp;</td>
+		<td colspan="1" rowspan="1" style="background-color: lightgrey;">3</td>
 		<td colspan="1" rowspan="1">4</td>
-		<td colspan="1" rowspan="1" style="background-color: lightgrey;">&nbsp;</td>
+		<td colspan="1" rowspan="1" style="background-color: lightgrey;">5</td>
 		<td colspan="1" rowspan="1" style="font-weight: bold;">15</td>
 	</tr>
 	<tr>
@@ -125,25 +121,25 @@ GitHub strips out all styling associated with HTML tags. Run the example on your
 	</tr>
 	<tr>
 		<td colspan="1" rowspan="1">12</td>
-		<td colspan="1" rowspan="1" style="background-color: lightgrey;">&nbsp;</td>
+		<td colspan="1" rowspan="1" style="background-color: lightgrey;">13</td>
 		<td colspan="1" rowspan="1">14</td>
-		<td colspan="1" rowspan="1" style="background-color: lightgrey;">&nbsp;</td>
+		<td colspan="1" rowspan="1" style="background-color: lightgrey;">15</td>
 		<td colspan="1" rowspan="1" style="font-weight: bold;">87</td>
 	</tr>
-	<tr style="font-weight: bold;">
-		<td colspan="1" rowspan="1">18</td>
-		<td colspan="1" rowspan="1">21</td>
-		<td colspan="1" rowspan="1">24</td>
-		<td colspan="1" rowspan="1">27</td>
-		<td colspan="1" rowspan="1">30</td>
-		<td colspan="1" rowspan="1">33</td>
-		<td colspan="1" rowspan="1" style="color: red;">306</td>
+	<tr>
+		<td colspan="1" rowspan="1" style="font-weight: bold;">18</td>
+		<td colspan="1" rowspan="1" style="font-weight: bold;">21</td>
+		<td colspan="1" rowspan="1" style="font-weight: bold;">24</td>
+		<td colspan="1" rowspan="1" style="font-weight: bold;">27</td>
+		<td colspan="1" rowspan="1" style="font-weight: bold;">30</td>
+		<td colspan="1" rowspan="1" style="font-weight: bold;">33</td>
+		<td colspan="1" rowspan="1" style="font-weight: bold; color: red;">306</td>
 	</tr>
 </table>
 
 ```php
 // An example setup using MatrixTable.
-require_once(dirname(__FILE__) . '/MatrixTable.class.php');
+require_once(dirname(__FILE__) . '/MatrixTables/MatrixTable.class.php');
 
 $data = array(
 	array(0, 1, 2, 3, 4, 5),
@@ -209,12 +205,7 @@ $table->map(
 
 $table->map(
 	'even,odd',
-	function($cell)
-	{
-		$cell->value; // Still calculate.
-		
-		return '';
-	},
+	null,
 	array(
 		MatrixTable::TYPE_CELL => array(
 			'style' => function($cell) { return 'background-color: lightgrey;'; }
@@ -226,44 +217,42 @@ $table->map(
 	'*,last',
 	function($cell)
 	{
-		$cell->value = $cell->column->total; // Total the column, using callbacks. Guaranteed to run only once.
-	
-		return $cell->column->total;
-	},
-	array(
-		MatrixTable::TYPE_ROW => array(
-			'style' => function($row) { return 'font-weight: bold;'; }
-		)
-	)
-);
-
-$table->map(
-	'*,last',
-	function($cell)
-	{
 		return ($cell->value = $cell->column->total); // Total the column, using callbacks. Guaranteed to run only once.
 	},
 	array(
-		MatrixTable::TYPE_ROW => array(
+		MatrixTable::TYPE_CELL => array(
 			'style' => function($row) { return 'font-weight: bold;'; }
 		)
 	)
 );
 
 $table->map(
-	'last,0-2',
+	'last,*',
 	function($cell)
 	{
 		return ($cell->value = $cell->row->total); // Total the row, using callbacks. Guaranteed to run only once.
 	},
 	array(
-		MatrixTable::TYPE_COLUMN => array(
-			'style' => function($column) { return 'font-weight: bold;'; }
+		MatrixTable::TYPE_CELL => array(
+			'style' => function($cell) { return 'font-weight: bold;'; }
 		)
 	)
 );
 
-// Expand a cell across rows and columns.
+$table->map(
+	'last,last',
+	function($cell)
+	{
+		return ($cell->row->total + $cell->column->total);
+	},
+	array(
+		MatrixTable::TYPE_CELL => array(
+			'style' => function($cell, $render) { return $render . ' color: red;'; }
+		)
+	)
+);
+
+// Expand a cell.
 $table->cell(4, 1)->expand(2, 2);
 
 $table->render();
