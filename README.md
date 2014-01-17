@@ -41,19 +41,19 @@ $table->callback(
 
 ## Mapping
 
-To render cells within the table, you use a mapping function that maps to a selection. The selection is a string, separated by a comma (,) to split the column (x) value by the row (y) starting at 0 for each dimension. For example:
+To render cells within the table, you map to a cell selection. The selection is a string separated by a comma (,) to split the column (x) selection by the row (y) selection. Indices start at 0 in either dimension. For example:
 
 "5,3"
 
-This would select the 6th column and 3rd row assuming they both exist. There is a selection language shorthand available to help ease the selection of your desired mapped cells.
+...would select the cell at index 5 (6th column) and index 3 (4th row), assuming the cell exists on the table. A selection language shorthand has been built for convenience.
 
 * first: First column/row.
 * last: Last column/row.
 * even: Even column/row(s).
 * odd: Odd column/row(s).
-* #-#: A range. Use indices in replace of the pound sign (#).
+* #-#: A range, using indices in replace of the pound sign (#).
 * #: An index in replace of the pound sign (#).
-* ;: A dimension separator. Allows you to group multiple selections within one dimension.
+* ;: A selection separator. Allows you to group multiple selections into one selection.
 
 ### Example
 
@@ -62,7 +62,9 @@ $table->map(
 	'even,odd',
 	function($cell)
 	{
-		return $cell->value;
+		$cell->value; // Still calculate.
+		
+		return '';
 	},
 	array(
 		MatrixTable::TYPE_CELL => array(
@@ -72,7 +74,72 @@ $table->map(
 );
 ```
 
+## Selecting Columns, Rows, and Cells
+
+Columns, rows, and cells can be selected at any time.
+
+* column($column): Get the column.
+* row($row): Get the row.
+* cell($column, $row): Get the cell.
+ 
+```php
+$cell = $table->cell(5, 3);
+```
+
+## Expanding Cells
+
+You are able to expand a cell on the rendering of the cell. Note that selecting a cell will return the underlying cell and not the cell that expanded on top of it.
+
+### Example
+
+On rendering this cell covers (4, 1), (5, 1), (4, 2), and (5, 2). Selecting the cell at (5, 2) will not return the expanded cell, but the underlying cell on the grid. This is built for convenience, so you can calculate sums and averages on straight columns and rows (i.e. the underlying structure) and not on the rendered layout.
+
+```php
+$expandedCell = $table->cell(4, 1)->expand(2, 2);
+
+// Selects the cell on the grid, not the expanded cell.
+$differentCell = $table->cell(5, 2);
+```
+
 ## Example
+
+GitHub strips out all styling associated with HTML tags. Run the example on your own machine to see the styling associated with the cells.
+
+<table border="1">
+	<tr>
+		<td colspan="1" rowspan="1">0</td>
+		<td colspan="1" rowspan="1" style="background-color: lightgrey;"></td>
+		<td colspan="1" rowspan="1">2</td>
+		<td colspan="1" rowspan="1" style="background-color: lightgrey;"></td>
+		<td colspan="1" rowspan="1">4</td>
+		<td colspan="1" rowspan="1" style="background-color: lightgrey;"></td>
+		<td colspan="1" rowspan="1" style="font-weight: bold;">15</td>
+	</tr>
+	<tr>
+		<td colspan="1" rowspan="1">6</td>
+		<td colspan="1" rowspan="1">7</td>
+		<td colspan="1" rowspan="1">8</td>
+		<td colspan="1" rowspan="1">9</td>
+		<td colspan="2" rowspan="2">10</td>
+		<td colspan="1" rowspan="1" style="font-weight: bold;">51</td>
+	</tr>
+	<tr>
+		<td colspan="1" rowspan="1">12</td>
+		<td colspan="1" rowspan="1" style="background-color: lightgrey;"></td>
+		<td colspan="1" rowspan="1">14</td>
+		<td colspan="1" rowspan="1" style="background-color: lightgrey;"></td>
+		<td colspan="1" rowspan="1" style="font-weight: bold;">87</td>
+	</tr>
+	<tr style="font-weight: bold;">
+		<td colspan="1" rowspan="1">18</td>
+		<td colspan="1" rowspan="1">21</td>
+		<td colspan="1" rowspan="1">24</td>
+		<td colspan="1" rowspan="1">27</td>
+		<td colspan="1" rowspan="1">30</td>
+		<td colspan="1" rowspan="1">33</td>
+		<td colspan="1" rowspan="1" style="color: red;" style="font-weight: bold;">306</td>
+	</tr>
+</table>
 
 ```php
 // An example setup using MatrixTable.
@@ -91,7 +158,7 @@ $table->callback(
 	'value',
 	function($cell) use ($data)
 	{
-		return $data[$cell->row->index][$cell->column->index];
+		return @$data[$cell->row->index][$cell->column->index];
 	}
 );
 
@@ -106,7 +173,7 @@ $table->callback(
 		{
 			$total += $column->table->cell($column->index, $i)->value;
 		}
-			
+		
 		return $total;
 	}
 );
@@ -122,7 +189,7 @@ $table->callback(
 		{
 			$total += $row->table->cell($i, $row->index)->value;
 		}
-			
+		
 		return $total;
 	}
 );
@@ -144,7 +211,9 @@ $table->map(
 	'even,odd',
 	function($cell)
 	{
-		return $cell->value;
+		$cell->value; // Still calculate.
+		
+		return '';
 	},
 	array(
 		MatrixTable::TYPE_CELL => array(
@@ -195,6 +264,9 @@ $table->map(
 		)
 	)
 );
+
+// Expand a cell across rows and columns.
+$table->cell(4, 1)->expand(2, 2);
 
 $table->render();
 ```
