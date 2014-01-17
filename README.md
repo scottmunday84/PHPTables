@@ -74,6 +74,33 @@ $table->map(
 );
 ```
 
+## Selecting Columns, Rows, and Cells
+
+Columns, rows, and cells can be selected at any time.
+
+* column($column): Get the column.
+* row($row): Get the row.
+* cell($column, $row): Get the cell.
+ 
+```php
+$cell = $table->cell(5, 3);
+```
+
+## Expanding Cells
+
+You are able to expand a cell on the rendering of the cell. Note that selecting a cell will return the underlying cell and not the cell that expanded on top of it.
+
+### Example
+
+On rendering this cell covers (4, 1), (5, 1), (4, 2), and (5, 2). Selecting the cell at (5, 2) will not return the expanded cell, but the underlying cell on the grid. This is built for convenience, so you can calculate sums and averages on straight columns and rows (i.e. the underlying structure) and not on the rendered layout.
+
+```php
+$expandedCell = $table->cell(4, 1)->expand(2, 2);
+
+// Selects the cell on the grid, not the expanded cell.
+$differentCell = $table->cell(5, 2);
+```
+
 ## Example
 
 GitHub strips out all styling associated with HTML tags. Run the example on your own machine to see the styling associated with the cells.
@@ -115,8 +142,6 @@ GitHub strips out all styling associated with HTML tags. Run the example on your
 </table>
 
 ```php
-<?php
-
 // An example setup using MatrixTable.
 require_once(dirname(__FILE__) . '/MatrixTable.class.php');
 
