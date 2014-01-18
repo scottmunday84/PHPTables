@@ -41,6 +41,12 @@ $table->callback(
 );
 ```
 
+Requesting the member "value" from any cell within the table will then produce a result.
+
+```php
+echo $table->cell(3, 3)->value;
+```
+
 ## Mapping
 
 To render cells within the table, you map to a cell selection. The selection is a string separated by a comma (,) to split the column (x) selection by the row (y) selection. Indices start at 0 in either dimension. For example the selection "5,3" selects the cell at index 5 (6th column) and index 3 (4th row), assuming the cell exists on the table. A selection language shorthand has been built for convenience.
