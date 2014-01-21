@@ -1,10 +1,21 @@
 <?php
 namespace MatrixTables;
 
-const TYPE_TABLE = -1;
-const TYPE_CELL = 0;
-const TYPE_ROW = 1;
-const TYPE_COLUMN = 2;
+const TYPE_TABLE = 1;
+const TYPE_SECTION = 2;
+const TYPE_CELL = 3;
+const TYPE_ROW = 4;
+const TYPE_COLUMN = 5;
+
+const TABLE_FULL = 1;
+const TABLE_COLLAPSED = 2;
+
+const SECTION_HEADER = 1;
+const SECTION_BODY = 2;
+const SECTION_FOOTER = 3;
+
+const RENDER = 0;	
+const SKIP = false;	
 
 class Amorphous
 {
@@ -34,42 +45,47 @@ class Amorphous
 class Column extends Amorphous 
 { 
 	public $table;
+	public $section;
 	
 	public $index;
 	public $rows;	
 
-	function __construct($table, $column, $rows)
+	function __construct($table, $section, $column, $rows)
 	{
 		$this->table = $table;
+		$this->section = $section;
 		
 		$this->index = $column;		
 		$this->rows = $rows;		
 
-		$this->_callbacks = $table->callbacks(TYPE_COLUMN);			
+		$this->_callbacks = $section->callbacks(TYPE_COLUMN);			
 	}
 };
 
 class Row extends Amorphous 
 { 
 	public $table;
+	public $section;
 	
 	public $index;
 	public $columns;
 	
-	function __construct($table, $row, $columns)
+	function __construct($table, $section, $row, $columns)
 	{
 		$this->table = $table;
+		$this->section = $section;
 				
 		$this->index = $row;
 		$this->columns = $columns;		
 
-		$this->_callbacks = $table->callbacks(TYPE_ROW);							
+		$this->_callbacks = $section->callbacks(TYPE_ROW);							
 	}
 };
 
 class Cell extends Amorphous 
 { 
 	public $table;
+	public $section;
 	
 	public $column;
 	public $row;
@@ -77,14 +93,15 @@ class Cell extends Amorphous
 	public $rows = 1;
 	public $columns = 1;
 	
-	function __construct($table, $column, $row)
+	function __construct($table, $section, $column, $row)
 	{
 		$this->table = $table;
+		$this->section = $section;
 		
 		$this->column = $column;
 		$this->row = $row;
 		
-		$this->_callbacks = $table->callbacks(TYPE_CELL);					
+		$this->_callbacks = $section->callbacks(TYPE_CELL);					
 	}
 
 	public function expand($columns = 1, $rows = 1)
@@ -94,8 +111,13 @@ class Cell extends Amorphous
 	}
 };
 
-class Table extends Amorphous
-{ 
+class Section extends Amorphous
+{
+	public $table;
+
+	protected $_sectionTag = 'tbody';
+	protected $_cellTag = 'td';
+
 	protected $_columns = array();
 	protected $_rows = array();
 	protected $_cells = array();
@@ -103,18 +125,21 @@ class Table extends Amorphous
 	protected $_columnCount = 0;	
 	protected $_rowCount = 0;
 	
+	protected $_tableCallbacks = array();
 	protected $_columnCallbacks = array();
 	protected $_rowCallbacks = array();
 	protected $_cellCallbacks = array();
 	
-	const RENDER = 0;
+	protected $_tableAttributes = array();
 	
-	const SKIP = false;	
-	
-	protected $_renderMap = array();
-	
-	function __construct($columns, $rows)
+	protected $_renderMap = array();		
+
+	function __construct($table, &$callbacks, &$attributes, $columns, $rows)
 	{
+		$this->table = $table;
+		$this->_tableCallbacks = &$callbacks;
+		$this->_tableAttributes = &$attributes;
+	
 		$this->_columnCount = ($columns <= 0 ? 1 : (int)$columns);
 		$this->_rowCount = ($rows <= 0 ? 1 : (int)$rows);		
 		
@@ -124,12 +149,12 @@ class Table extends Amorphous
 			
 			for ($b = 0; $b <= $this->_rowCount; ++$b)
 			{
-				$this->_renderMap[$a][$b] = array(self::RENDER => null);
+				$this->_renderMap[$a][$b] = array(RENDER => null);
 			}
 		}		
 	}
 	
-	private function _build($type)
+	protected function _build($type)
 	{
 		switch ($type)
 		{
@@ -138,7 +163,7 @@ class Table extends Amorphous
 				
 				if (!isset($this->_columns[$column]))
 				{
-					$this->_columns[$column] = new Column($this, $column, $this->_rowCount);
+					$this->_columns[$column] = new Column($this->table, $this, $column, $this->_rowCount);
 				}				
 				
 				return $this->_columns[$column];
@@ -147,7 +172,7 @@ class Table extends Amorphous
 				
 				if (!isset($this->_rows[$row]))
 				{
-					$this->_rows[$row] = new Row($this, $row, $this->_columnCount);
+					$this->_rows[$row] = new Row($this->table, $this, $row, $this->_columnCount);
 				}				
 
 				return $this->_rows[$row];
@@ -159,7 +184,7 @@ class Table extends Amorphous
 				
 				if (!isset($this->_cells[$column][$row]))
 				{
-					$this->_cells[$column][$row] = new Cell($this, $_column, $_row);
+					$this->_cells[$column][$row] = new Cell($this->table, $this, $_column, $_row);
 				}				
 				
 				return $this->_cells[$column][$row];
@@ -186,6 +211,8 @@ class Table extends Amorphous
 		switch ($type)
 		{
 			case TYPE_TABLE:
+				return $this->_tableCallbacks;
+			case TYPE_SECTION:
 				return $this->_callbacks;
 			case TYPE_COLUMN:
 				return $this->_columnCallbacks;
@@ -205,6 +232,9 @@ class Table extends Amorphous
 			switch ($type)
 			{
 				case TYPE_TABLE:
+					$this->_tableCallbacks[$property] = $callback;
+					break;			
+				case TYPE_SECTION:
 					$this->_callbacks[$property] = $callback;
 					break;			
 				case TYPE_COLUMN:
@@ -327,7 +357,7 @@ class Table extends Amorphous
 		{
 			foreach ($y as $yOffset)
 			{
-				$this->_assignRenderMapRender($this->_renderMap[$xOffset][$yOffset][self::RENDER], $callback);
+				$this->_assignRenderMapRender($this->_renderMap[$xOffset][$yOffset][RENDER], $callback);
 				
 				// Assign attributes.
 				if (isset($attributes[TYPE_CELL]) && is_array($attributes[TYPE_CELL]))
@@ -353,9 +383,15 @@ class Table extends Amorphous
 		}
 		
 		// Assign attributes.
+		if (isset($attributes[TYPE_SECTION]) && is_array($attributes[TYPE_SECTION]))
+		{
+			$this->_assignRenderMapAttributes($this->_renderMap[$this->_columnCount][$this->_rowCount], $attributes[TYPE_SECTION]);
+		}
+		
+		// Assign attributes.
 		if (isset($attributes[TYPE_TABLE]) && is_array($attributes[TYPE_TABLE]))
 		{
-			$this->_assignRenderMapAttributes($this->_renderMap[$this->_columnCount][$this->_rowCount], $attributes[TYPE_TABLE]);
+			$this->_assignRenderMapAttributes($this->_tableAttributes, $attributes[TYPE_TABLE]);
 		}
 	}
 	
@@ -410,11 +446,91 @@ class Table extends Amorphous
 		}
 		
 		return $rtn;
-	}
+	}	
 	
 	public function render()
 	{	
-		echo '<table' . $this->_renderAttributes($this->_processAttributes($this, $this->_renderMap[$this->_columnCount][$this->_rowCount])) . '>' . PHP_EOL;
+		echo "\t" . '<' . $this->_sectionTag . $this->_renderAttributes($this->_processAttributes($this, $this->_renderMap[$this->_columnCount][$this->_rowCount])) . '>' . PHP_EOL;
+	
+		for ($a = 0; $a < $this->_rowCount; ++$a)
+		{
+			echo "\t\t" . '<tr' . $this->_renderAttributes($this->_processAttributes($this->row($a), $this->_renderMap[$this->_columnCount][$a])) . '>' . PHP_EOL;
+		
+			for ($b = 0; $b < $this->_columnCount; ++$b)
+			{
+				$cell = $this->_build(TYPE_CELL, $b, $a); // X x Y
+								
+				if ($this->_renderMap[$b][$a][RENDER] !== SKIP)
+				{
+					$render = ($this->_renderMap[$b][$a][RENDER] ? $this->_render($cell, $this->_renderMap[$b][$a][RENDER]) : '&nsbp;');
+				
+					if ($render === SKIP) { continue; }
+					
+					echo "\t\t\t" . '<' . $this->_cellTag . ' colspan="' . htmlentities($cell->columns) . '" rowspan="' . htmlentities($cell->rows) . '"' . 
+						$this->_renderAttributes(
+							$this->_processAttributes($this->column($b), $this->_renderMap[$b][$this->_rowCount]),
+							$this->_processAttributes($cell, array_slice($this->_renderMap[$b][$a], 1))
+						) .
+						'>';
+					echo $render;
+					echo '</' . $this->_cellTag . '>' . PHP_EOL;
+					
+					// Map to the cell expansion.
+					for ($c = $a, $d = min($this->_rowCount, $c + $cell->rows); $c < $d; ++$c)
+					{
+						for ($e = $b, $f = min($this->_columnCount, $e + $cell->columns); $e < $f; ++$e)
+						{						
+							if ($c == $a && $e == $b) { continue; }
+							
+							$childCell = $this->_build(TYPE_CELL, $e, $c);
+							
+							if (is_array($this->_renderMap[$e][$c][RENDER]))
+							{
+								$this->_render($childCell, $this->_renderMap[$e][$c][RENDER]);
+							}
+							
+							$this->_renderMap[$e][$c][RENDER] = SKIP;
+						}
+					}					
+				}
+			}
+			
+			echo "\t\t" . '</tr>' . PHP_EOL;			
+		}
+		
+		echo "\t" . '</' . $this->_sectionTag . '>' . PHP_EOL;
+		
+	}	
+};
+
+class HeaderSection extends Section
+{
+	protected $_sectionTag = 'thead';
+	protected $_cellTag = 'th';
+}
+
+class BodySection extends Section { };
+
+class FooterSection extends Section
+{
+	protected $_sectionTag = 'tfoot';
+	protected $_cellTag = 'th';
+};
+
+class Table extends Section { 
+	protected $_attributes = array();
+};
+
+class CollapsedTable extends Table
+{
+	function __construct($columns, $rows)
+	{		
+		parent::__construct($this, $this->_callbacks, $this->_attributes, $columns, $rows);
+	}
+	
+	public function render()
+	{
+		echo '<table' . $this->_renderAttributes($this->_processAttributes($this, $this->_attributes)) . '>' . PHP_EOL;
 		
 		for ($a = 0; $a < $this->_rowCount; ++$a)
 		{
@@ -424,13 +540,13 @@ class Table extends Amorphous
 			{
 				$cell = $this->_build(TYPE_CELL, $b, $a); // X x Y
 								
-				if ($this->_renderMap[$b][$a][self::RENDER] !== self::SKIP)
+				if ($this->_renderMap[$b][$a][RENDER] !== SKIP)
 				{
-					$render = ($this->_renderMap[$b][$a][self::RENDER] ? $this->_render($cell, $this->_renderMap[$b][$a][self::RENDER]) : '&nsbp;');
+					$render = ($this->_renderMap[$b][$a][RENDER] ? $this->_render($cell, $this->_renderMap[$b][$a][RENDER]) : '&nsbp;');
 				
-					if ($render === self::SKIP) { continue; }
+					if ($render === SKIP) { continue; }
 					
-					echo "\t\t" . '<td colspan="' . htmlentities($cell->columns) . '" rowspan="' . htmlentities($cell->rows) . '"' . 
+					echo "\t\t" . '<' . $this->_cellTag . ' colspan="' . htmlentities($cell->columns) . '" rowspan="' . htmlentities($cell->rows) . '"' . 
 						$this->_renderAttributes(
 							$this->_processAttributes($this->column($b), $this->_renderMap[$b][$this->_rowCount]),
 							$this->_processAttributes($cell, array_slice($this->_renderMap[$b][$a], 1))
@@ -448,12 +564,12 @@ class Table extends Amorphous
 							
 							$childCell = $this->_build(TYPE_CELL, $e, $c);
 							
-							if (is_array($this->_renderMap[$e][$c][self::RENDER]))
+							if (is_array($this->_renderMap[$e][$c][RENDER]))
 							{
-								$this->_render($childCell, $this->_renderMap[$e][$c][self::RENDER]);
+								$this->_render($childCell, $this->_renderMap[$e][$c][RENDER]);
 							}
 							
-							$this->_renderMap[$e][$c][self::RENDER] = self::SKIP;
+							$this->_renderMap[$e][$c][RENDER] = SKIP;
 						}
 					}					
 				}
@@ -463,5 +579,104 @@ class Table extends Amorphous
 		}
 		
 		echo '</table>' . PHP_EOL;
+	}
+};
+
+class FullTable extends Table
+{ 	
+	private $_header = null;
+	private $_body = null;
+	private $_footer = null;
+	
+	function __construct()
+	{
+		$this->table = $this;
+		$this->_tableCallbacks = $this->_callbacks;
+		$this->_tableAttributes = $this->_attributes;
+	}
+	
+	private function _setSection($section, $arguments)
+	{
+		list($columns, $rows) = $arguments;
+				
+		switch ($section)
+		{
+			case SECTION_HEADER:
+				return new HeaderSection($this, $this->_callbacks, $this->_attributes, $columns, $rows);
+			case SECTION_BODY:
+				return new BodySection($this, $this->_callbacks, $this->_attributes, $columns, $rows);
+			case SECTION_FOOTER:
+				return new FooterSection($this, $this->_callbacks, $this->_attributes, $columns, $rows);
+		}
+		
+		return null;
+	}
+	
+	public function header()
+	{
+		if (($arguments = func_get_args()))
+		{
+			$this->_header = $this->_setSection(SECTION_HEADER, $arguments);
+		}
+		
+		return $this->_header;
+	}
+	
+	public function body()
+	{
+		if (($arguments = func_get_args()))
+		{
+			$this->_body = $this->_setSection(SECTION_BODY, $arguments);
+		}
+		
+		return $this->_body;
+	}
+	
+	public function footer()
+	{
+		if (($arguments = func_get_args()))
+		{
+			$this->_footer = $this->_setSection(SECTION_FOOTER, $arguments);
+		}
+		
+		return $this->_footer;
+	}
+	
+	public function render()
+	{
+		echo '<table' . $this->_renderAttributes($this->_processAttributes($this, $this->_attributes)) . '>' . PHP_EOL;
+		
+		if ($this->_header)
+		{
+			$this->_header->render();
+		}
+		
+		if ($this->_body)
+		{
+			$this->_body->render();
+		}
+		
+		if ($this->_footer)
+		{
+			$this->_footer->render();
+		}
+		
+		echo '</table>' . PHP_EOL;
+	}
+};
+
+class TableFactory
+{
+	static function build($type)
+	{
+		switch ($type)
+		{
+			case TABLE_FULL:
+				return new FullTable();
+			case TABLE_COLLAPSED:
+				list($tmp, $rows, $columns) = func_get_args();
+				
+				return new CollapsedTable($rows, $columns);
+		}
 	}
 };
