@@ -7,7 +7,7 @@ const TYPE_CELL = 3;
 const TYPE_ROW = 4;
 const TYPE_COLUMN = 5;
 
-const TABLE_FULL = 1;
+const TABLE_HBF = 1;
 const TABLE_COLLAPSED = 2;
 
 const SECTION_HEADER = 1;
@@ -42,7 +42,10 @@ class Amorphous
 	}	
 };
 
-class Column extends Amorphous 
+namespace MatrixTables\Types;
+use MatrixTables as MT;
+
+class Column extends MT\Amorphous 
 { 
 	public $table;
 	public $section;
@@ -58,11 +61,11 @@ class Column extends Amorphous
 		$this->index = $column;		
 		$this->rows = $rows;		
 
-		$this->_callbacks = $section->callbacks(TYPE_COLUMN);			
+		$this->_callbacks = $section->callbacks(MT\TYPE_COLUMN);			
 	}
 };
 
-class Row extends Amorphous 
+class Row extends MT\Amorphous 
 { 
 	public $table;
 	public $section;
@@ -78,11 +81,11 @@ class Row extends Amorphous
 		$this->index = $row;
 		$this->columns = $columns;		
 
-		$this->_callbacks = $section->callbacks(TYPE_ROW);							
+		$this->_callbacks = $section->callbacks(MT\TYPE_ROW);							
 	}
 };
 
-class Cell extends Amorphous 
+class Cell extends MT\Amorphous 
 { 
 	public $table;
 	public $section;
@@ -101,7 +104,7 @@ class Cell extends Amorphous
 		$this->column = $column;
 		$this->row = $row;
 		
-		$this->_callbacks = $section->callbacks(TYPE_CELL);					
+		$this->_callbacks = $section->callbacks(MT\TYPE_CELL);					
 	}
 
 	public function expand($columns = 1, $rows = 1)
@@ -111,7 +114,10 @@ class Cell extends Amorphous
 	}
 };
 
-class Section extends Amorphous
+namespace MatrixTables\Sections;
+use MatrixTables as MT;
+
+class Section extends MT\Amorphous
 {
 	public $table;
 
@@ -149,7 +155,7 @@ class Section extends Amorphous
 			
 			for ($b = 0; $b <= $this->_rowCount; ++$b)
 			{
-				$this->_renderMap[$a][$b] = array(RENDER => null);
+				$this->_renderMap[$a][$b] = array(MT\RENDER => null);
 			}
 		}		
 	}
@@ -158,33 +164,33 @@ class Section extends Amorphous
 	{
 		switch ($type)
 		{
-			case TYPE_COLUMN:
+			case MT\TYPE_COLUMN:
 				list($ignore, $column) = func_get_args();
 				
 				if (!isset($this->_columns[$column]))
 				{
-					$this->_columns[$column] = new Column($this->table, $this, $column, $this->_rowCount);
+					$this->_columns[$column] = new MT\Types\Column($this->table, $this, $column, $this->_rowCount);
 				}				
 				
 				return $this->_columns[$column];
-			case TYPE_ROW:
+			case MT\TYPE_ROW:
 				list($ignore, $row) = func_get_args();
 				
 				if (!isset($this->_rows[$row]))
 				{
-					$this->_rows[$row] = new Row($this->table, $this, $row, $this->_columnCount);
+					$this->_rows[$row] = new MT\Types\Row($this->table, $this, $row, $this->_columnCount);
 				}				
 
 				return $this->_rows[$row];
-			case TYPE_CELL: // Cell considers rows and columns.
+			case MT\TYPE_CELL: // Cell considers rows and columns.
 				list($ignore, $column, $row) = func_get_args();
 				
-				$_column = $this->_build(TYPE_COLUMN, $column);
-				$_row = $this->_build(TYPE_ROW, $row);				
+				$_column = $this->_build(MT\TYPE_COLUMN, $column);
+				$_row = $this->_build(MT\TYPE_ROW, $row);				
 				
 				if (!isset($this->_cells[$column][$row]))
 				{
-					$this->_cells[$column][$row] = new Cell($this->table, $this, $_column, $_row);
+					$this->_cells[$column][$row] = new MT\Types\Cell($this->table, $this, $_column, $_row);
 				}				
 				
 				return $this->_cells[$column][$row];
@@ -193,32 +199,32 @@ class Section extends Amorphous
 	
 	public function row($row)
 	{
-		return $this->_build(TYPE_ROW, $row);
+		return $this->_build(MT\TYPE_ROW, $row);
 	}
 
 	public function column($column)
 	{
-		return $this->_build(TYPE_COLUMN, $column);
+		return $this->_build(MT\TYPE_COLUMN, $column);
 	}
 	
 	public function cell($column, $row)
 	{
-		return $this->_build(TYPE_CELL, $column, $row);
+		return $this->_build(MT\TYPE_CELL, $column, $row);
 	}
 
 	public function callbacks($type)
 	{
 		switch ($type)
 		{
-			case TYPE_TABLE:
+			case MT\TYPE_TABLE:
 				return $this->_tableCallbacks;
-			case TYPE_SECTION:
+			case MT\TYPE_SECTION:
 				return $this->_callbacks;
-			case TYPE_COLUMN:
+			case MT\TYPE_COLUMN:
 				return $this->_columnCallbacks;
-			case TYPE_ROW:
+			case MT\TYPE_ROW:
 				return $this->_rowCallbacks;
-			case TYPE_CELL:
+			case MT\TYPE_CELL:
 				return $this->_cellCallbacks;
 		}
 		
@@ -231,19 +237,19 @@ class Section extends Amorphous
 		{
 			switch ($type)
 			{
-				case TYPE_TABLE:
+				case MT\TYPE_TABLE:
 					$this->_tableCallbacks[$property] = $callback;
 					break;			
-				case TYPE_SECTION:
+				case MT\TYPE_SECTION:
 					$this->_callbacks[$property] = $callback;
 					break;			
-				case TYPE_COLUMN:
+				case MT\TYPE_COLUMN:
 					$this->_columnCallbacks[$property] = $callback;
 					break;
-				case TYPE_ROW:
+				case MT\TYPE_ROW:
 					$this->_rowCallbacks[$property] = $callback;
 					break;
-				case TYPE_CELL:
+				case MT\TYPE_CELL:
 					$this->_cellCallbacks[$property] = $callback;
 					break;
 			}
@@ -256,11 +262,11 @@ class Section extends Amorphous
 		
 		$max = 0;
 	
-		if ($type == TYPE_COLUMN)
+		if ($type == MT\TYPE_COLUMN)
 		{
 			$max = $this->_columnCount - 1;
 		}
-		elseif ($type == TYPE_ROW)
+		elseif ($type == MT\TYPE_ROW)
 		{
 			$max = $this->_rowCount - 1;
 		}
@@ -348,8 +354,8 @@ class Section extends Amorphous
 	{
 		list($x, $y) = explode(',', $selection);
 		
-		$x = $this->_parseMapDimension(TYPE_COLUMN, $x);
-		$y = $this->_parseMapDimension(TYPE_ROW, $y);
+		$x = $this->_parseMapDimension(MT\TYPE_COLUMN, $x);
+		$y = $this->_parseMapDimension(MT\TYPE_ROW, $y);
 		
 		$appliedRowAttributes = false;
 		
@@ -357,18 +363,18 @@ class Section extends Amorphous
 		{
 			foreach ($y as $yOffset)
 			{
-				$this->_assignRenderMapRender($this->_renderMap[$xOffset][$yOffset][RENDER], $callback);
+				$this->_assignRenderMapRender($this->_renderMap[$xOffset][$yOffset][MT\RENDER], $callback);
 				
 				// Assign attributes.
-				if (isset($attributes[TYPE_CELL]) && is_array($attributes[TYPE_CELL]))
+				if (isset($attributes[MT\TYPE_CELL]) && is_array($attributes[MT\TYPE_CELL]))
 				{
-					$this->_assignRenderMapAttributes($this->_renderMap[$xOffset][$yOffset], $attributes[TYPE_CELL]); // All other index values are properties of the cell.
+					$this->_assignRenderMapAttributes($this->_renderMap[$xOffset][$yOffset], $attributes[MT\TYPE_CELL]); // All other index values are properties of the cell.
 				}
 				
 				// Assign attributes.
-				if (!$appliedRowAttributes && isset($attributes[TYPE_ROW]) && is_array($attributes[TYPE_ROW]))
+				if (!$appliedRowAttributes && isset($attributes[MT\TYPE_ROW]) && is_array($attributes[MT\TYPE_ROW]))
 				{
-					$this->_assignRenderMapAttributes($this->_renderMap[$this->_columnCount][$yOffset], $attributes[TYPE_ROW]);
+					$this->_assignRenderMapAttributes($this->_renderMap[$this->_columnCount][$yOffset], $attributes[MT\TYPE_ROW]);
 				}
 			}
 			
@@ -376,22 +382,22 @@ class Section extends Amorphous
 			$appliedRowAttributes = true;
 			
 			// Assign attributes.
-			if (isset($attributes[TYPE_COLUMN]) && is_array($attributes[TYPE_COLUMN]))
+			if (isset($attributes[MT\TYPE_COLUMN]) && is_array($attributes[MT\TYPE_COLUMN]))
 			{
-				$this->_assignRenderMapAttributes($this->_renderMap[$xOffset][$this->_rowCount], $attributes[TYPE_COLUMN]);
+				$this->_assignRenderMapAttributes($this->_renderMap[$xOffset][$this->_rowCount], $attributes[MT\TYPE_COLUMN]);
 			}
 		}
 		
 		// Assign attributes.
-		if (isset($attributes[TYPE_SECTION]) && is_array($attributes[TYPE_SECTION]))
+		if (isset($attributes[MT\TYPE_SECTION]) && is_array($attributes[MT\TYPE_SECTION]))
 		{
-			$this->_assignRenderMapAttributes($this->_renderMap[$this->_columnCount][$this->_rowCount], $attributes[TYPE_SECTION]);
+			$this->_assignRenderMapAttributes($this->_renderMap[$this->_columnCount][$this->_rowCount], $attributes[MT\TYPE_SECTION]);
 		}
 		
 		// Assign attributes.
-		if (isset($attributes[TYPE_TABLE]) && is_array($attributes[TYPE_TABLE]))
+		if (isset($attributes[MT\TYPE_TABLE]) && is_array($attributes[MT\TYPE_TABLE]))
 		{
-			$this->_assignRenderMapAttributes($this->_tableAttributes, $attributes[TYPE_TABLE]);
+			$this->_assignRenderMapAttributes($this->_tableAttributes, $attributes[MT\TYPE_TABLE]);
 		}
 	}
 	
@@ -458,13 +464,13 @@ class Section extends Amorphous
 		
 			for ($b = 0; $b < $this->_columnCount; ++$b)
 			{
-				$cell = $this->_build(TYPE_CELL, $b, $a); // X x Y
+				$cell = $this->_build(MT\TYPE_CELL, $b, $a); // X x Y
 								
-				if ($this->_renderMap[$b][$a][RENDER] !== SKIP)
+				if ($this->_renderMap[$b][$a][MT\RENDER] !== MT\SKIP)
 				{
-					$render = ($this->_renderMap[$b][$a][RENDER] ? $this->_render($cell, $this->_renderMap[$b][$a][RENDER]) : '&nsbp;');
+					$render = ($this->_renderMap[$b][$a][MT\RENDER] ? $this->_render($cell, $this->_renderMap[$b][$a][MT\RENDER]) : '&nsbp;');
 				
-					if ($render === SKIP) { continue; }
+					if ($render === MT\SKIP) { continue; }
 					
 					echo "\t\t\t" . '<' . $this->_cellTag . ' colspan="' . htmlentities($cell->columns) . '" rowspan="' . htmlentities($cell->rows) . '"' . 
 						$this->_renderAttributes(
@@ -482,14 +488,14 @@ class Section extends Amorphous
 						{						
 							if ($c == $a && $e == $b) { continue; }
 							
-							$childCell = $this->_build(TYPE_CELL, $e, $c);
+							$childCell = $this->_build(MT\TYPE_CELL, $e, $c);
 							
-							if (is_array($this->_renderMap[$e][$c][RENDER]))
+							if (is_array($this->_renderMap[$e][$c][MT\RENDER]))
 							{
-								$this->_render($childCell, $this->_renderMap[$e][$c][RENDER]);
+								$this->_render($childCell, $this->_renderMap[$e][$c][MT\RENDER]);
 							}
 							
-							$this->_renderMap[$e][$c][RENDER] = SKIP;
+							$this->_renderMap[$e][$c][MT\RENDER] = MT\SKIP;
 						}
 					}					
 				}
@@ -503,25 +509,29 @@ class Section extends Amorphous
 	}	
 };
 
-class HeaderSection extends Section
+class Header extends Section
 {
 	protected $_sectionTag = 'thead';
 	protected $_cellTag = 'th';
 }
 
-class BodySection extends Section { };
+class Body extends Section { };
 
-class FooterSection extends Section
+class Footer extends Section
 {
 	protected $_sectionTag = 'tfoot';
 	protected $_cellTag = 'th';
 };
 
-class Table extends Section { 
+namespace MatrixTables\Tables;
+use MatrixTables as MT;
+
+class Table extends MT\Sections\Section 
+{
 	protected $_attributes = array();
 };
 
-class CollapsedTable extends Table
+class Collapsed extends Table
 {
 	function __construct($columns, $rows)
 	{		
@@ -538,13 +548,13 @@ class CollapsedTable extends Table
 		
 			for ($b = 0; $b < $this->_columnCount; ++$b)
 			{
-				$cell = $this->_build(TYPE_CELL, $b, $a); // X x Y
+				$cell = $this->_build(MT\TYPE_CELL, $b, $a); // X x Y
 								
-				if ($this->_renderMap[$b][$a][RENDER] !== SKIP)
+				if ($this->_renderMap[$b][$a][MT\RENDER] !== MT\SKIP)
 				{
-					$render = ($this->_renderMap[$b][$a][RENDER] ? $this->_render($cell, $this->_renderMap[$b][$a][RENDER]) : '&nsbp;');
+					$render = ($this->_renderMap[$b][$a][MT\RENDER] ? $this->_render($cell, $this->_renderMap[$b][$a][MT\RENDER]) : '&nsbp;');
 				
-					if ($render === SKIP) { continue; }
+					if ($render === MT\SKIP) { continue; }
 					
 					echo "\t\t" . '<' . $this->_cellTag . ' colspan="' . htmlentities($cell->columns) . '" rowspan="' . htmlentities($cell->rows) . '"' . 
 						$this->_renderAttributes(
@@ -562,14 +572,14 @@ class CollapsedTable extends Table
 						{						
 							if ($c == $a && $e == $b) { continue; }
 							
-							$childCell = $this->_build(TYPE_CELL, $e, $c);
+							$childCell = $this->_build(MT\TYPE_CELL, $e, $c);
 							
-							if (is_array($this->_renderMap[$e][$c][RENDER]))
+							if (is_array($this->_renderMap[$e][$c][MT\RENDER]))
 							{
-								$this->_render($childCell, $this->_renderMap[$e][$c][RENDER]);
+								$this->_render($childCell, $this->_renderMap[$e][$c][MT\RENDER]);
 							}
 							
-							$this->_renderMap[$e][$c][RENDER] = SKIP;
+							$this->_renderMap[$e][$c][MT\RENDER] = MT\SKIP;
 						}
 					}					
 				}
@@ -582,7 +592,7 @@ class CollapsedTable extends Table
 	}
 };
 
-class FullTable extends Table
+class HBF extends Table
 { 	
 	private $_header = null;
 	private $_body = null;
@@ -601,12 +611,12 @@ class FullTable extends Table
 				
 		switch ($section)
 		{
-			case SECTION_HEADER:
-				return new HeaderSection($this, $this->_callbacks, $this->_attributes, $columns, $rows);
-			case SECTION_BODY:
-				return new BodySection($this, $this->_callbacks, $this->_attributes, $columns, $rows);
-			case SECTION_FOOTER:
-				return new FooterSection($this, $this->_callbacks, $this->_attributes, $columns, $rows);
+			case MT\SECTION_HEADER:
+				return new MT\Sections\Header($this, $this->_callbacks, $this->_attributes, $columns, $rows);
+			case MT\SECTION_BODY:
+				return new MT\Sections\Body($this, $this->_callbacks, $this->_attributes, $columns, $rows);
+			case MT\SECTION_FOOTER:
+				return new MT\Sections\Footer($this, $this->_callbacks, $this->_attributes, $columns, $rows);
 		}
 		
 		return null;
@@ -616,7 +626,7 @@ class FullTable extends Table
 	{
 		if (($arguments = func_get_args()))
 		{
-			$this->_header = $this->_setSection(SECTION_HEADER, $arguments);
+			$this->_header = $this->_setSection(MT\SECTION_HEADER, $arguments);
 		}
 		
 		return $this->_header;
@@ -626,7 +636,7 @@ class FullTable extends Table
 	{
 		if (($arguments = func_get_args()))
 		{
-			$this->_body = $this->_setSection(SECTION_BODY, $arguments);
+			$this->_body = $this->_setSection(MT\SECTION_BODY, $arguments);
 		}
 		
 		return $this->_body;
@@ -636,7 +646,7 @@ class FullTable extends Table
 	{
 		if (($arguments = func_get_args()))
 		{
-			$this->_footer = $this->_setSection(SECTION_FOOTER, $arguments);
+			$this->_footer = $this->_setSection(MT\SECTION_FOOTER, $arguments);
 		}
 		
 		return $this->_footer;
@@ -662,21 +672,5 @@ class FullTable extends Table
 		}
 		
 		echo '</table>' . PHP_EOL;
-	}
-};
-
-class TableFactory
-{
-	static function build($type)
-	{
-		switch ($type)
-		{
-			case TABLE_FULL:
-				return new FullTable();
-			case TABLE_COLLAPSED:
-				list($tmp, $rows, $columns) = func_get_args();
-				
-				return new CollapsedTable($rows, $columns);
-		}
 	}
 };
