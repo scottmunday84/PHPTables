@@ -109,7 +109,7 @@ class Table extends Amorphous
 	
 	const RENDER = 0;
 	
-	const SKIP = -1;	
+	const SKIP = false;	
 	
 	protected $_renderMap = array();
 	
@@ -424,11 +424,11 @@ class Table extends Amorphous
 			{
 				$cell = $this->_build(TYPE_CELL, $b, $a); // X x Y
 								
-				if ($this->_renderMap[$b][$a][self::RENDER] != self::SKIP)
+				if ($this->_renderMap[$b][$a][self::RENDER] !== self::SKIP)
 				{
 					$render = ($this->_renderMap[$b][$a][self::RENDER] ? $this->_render($cell, $this->_renderMap[$b][$a][self::RENDER]) : '&nsbp;');
 				
-					if ($render === false || $render == self::SKIP) { continue; }
+					if ($render === self::SKIP) { continue; }
 					
 					echo "\t\t" . '<td colspan="' . htmlentities($cell->columns) . '" rowspan="' . htmlentities($cell->rows) . '"' . 
 						$this->_renderAttributes(
