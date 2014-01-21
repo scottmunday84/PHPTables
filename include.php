@@ -423,16 +423,20 @@ class Table extends Amorphous
 			for ($b = 0; $b < $this->_columnCount; ++$b)
 			{
 				$cell = $this->_build(TYPE_CELL, $b, $a); // X x Y
-				
+								
 				if ($this->_renderMap[$b][$a][self::RENDER] != self::SKIP)
 				{
+					$render = ($this->_renderMap[$b][$a][self::RENDER] ? $this->_render($cell, $this->_renderMap[$b][$a][self::RENDER]) : '&nsbp;');
+				
+					if ($render === false || $render == self::SKIP) { continue; }
+					
 					echo "\t\t" . '<td colspan="' . htmlentities($cell->columns) . '" rowspan="' . htmlentities($cell->rows) . '"' . 
 						$this->_renderAttributes(
 							$this->_processAttributes($this->column($b), $this->_renderMap[$b][$this->_rowCount]),
 							$this->_processAttributes($cell, array_slice($this->_renderMap[$b][$a], 1))
 						) .
 						'>';
-					echo ($this->_renderMap[$b][$a][self::RENDER] ? $this->_render($cell, $this->_renderMap[$b][$a][self::RENDER]) : '&nbsp;');
+					echo $render;
 					echo '</td>' . PHP_EOL;
 					
 					// Map to the cell expansion.
