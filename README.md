@@ -59,6 +59,8 @@ To render cells within the table, you map to a cell selection. The selection is 
 * #: An index in replace of the pound sign (#).
 * ;: A selection separator. Allows you to group multiple selections into one selection.
 
+Return a false or a MatrixTables\Table::SKIP to skip the rendering of the cell.
+
 ### Example
 
 ```php
