@@ -1,7 +1,7 @@
-MatrixTables
+PHPTables
 ============
 
-MatrixTables is a PHP implementation of rendering flexible HTML tables. 
+PHPTables is a PHP implementation of rendering flexible HTML tables. 
 
 What sets this table project apart from other like projects is its use of a technique of dynamic, dynamic programming, or 
 (as I prefer to call it) amorphous data classes.
@@ -21,21 +21,21 @@ I will delve more into the topic once I see the need, have the desire, and see a
 
 Amorphous data classes, as mentioned, use callbacks to initiate its data. Create a callback to setup a callback on a table, column, row, or cell.
 
-* MatrixTables\TYPE_TABLE
-* MatrixTables\TYPE_SECTION
-* MatrixTables\TYPE_COLUMN
-* MatrixTables\TYPE_ROW
-* MatrixTables\TYPE_CELL
+* PHPTables\TYPE_TABLE
+* PHPTables\TYPE_SECTION
+* PHPTables\TYPE_COLUMN
+* PHPTables\TYPE_ROW
+* PHPTables\TYPE_CELL
 
 ### Example
 
 ```php
-use MatrixTables as MT;
+use PHPTables;
 
-$table = new MT\Tables\Collapsed(7, 4);
+$table = new PHPTables\Tables\Collapsed(7, 4);
 
 $table->callback(
-	MT\TYPE_CELL, 
+	PHPTables\TYPE_CELL, 
 	'value',
 	function($cell) use ($data)
 	{
@@ -67,9 +67,9 @@ Return a false or a MatrixTables\Table::SKIP to skip the rendering of the cell.
 ### Example
 
 ```php
-use MatrixTables as MT;
+use PHPTables;
 
-$table = new MT\Tables\Collapsed(7, 4);
+$table = new PHPTables\Tables\Collapsed(7, 4);
 
 $table->map(
 	'*,last',
@@ -78,14 +78,14 @@ $table->map(
 		return ($cell->value = $cell->column->total); // Total the column, using callbacks. Guaranteed to run only once.
 	},
 	array(
-		MT\TYPE_CELL => array(
+		PHPTables\TYPE_CELL => array(
 			'style' => function($row) { return 'font-weight: bold;'; }
 		)
 	)
 );
 ```
 
-Mapping render/attribute callbacks cascade downward, so effectively you can map one selection, map over it, and return the combination of their results. As well cell attributes override any of the same column attributes applied. When in doubt use MatrixTables\TYPE_CELL.
+Mapping render/attribute callbacks cascade downward, so effectively you can map one selection, map over it, and return the combination of their results. As well cell attributes override any of the same column attributes applied. When in doubt use PHPTables\TYPE_CELL.
 
 ## Selecting Columns, Rows, and Cells
 
@@ -108,9 +108,9 @@ You are able to expand a cell on the rendering of the cell. Note that selecting 
 On rendering this cell covers (4, 1), (5, 1), (4, 2), and (5, 2). Selecting the cell at (5, 2) will not return the expanded cell, but the underlying cell on the grid. This is built for convenience, so you can calculate sums and averages on straight columns and rows (i.e. the underlying structure) and not on the rendered layout.
 
 ```php
-use MatrixTables as MT;
+use PHPTables;
 
-$table = new MT\Tables\Collapsed(7, 4);
+$table = new PHPTables\Tables\Collapsed(7, 4);
 
 $expandedCell = $table->cell(4, 1)->expand(2, 2);
 
@@ -160,9 +160,9 @@ GitHub strips out all styling associated with HTML tags. Run the example on your
 
 ```php
 
-// An example setup using MatrixTable.
-require_once(dirname(__FILE__) . '/MatrixTables/include.php');
-use MatrixTables as MT;
+// An example setup using PHPTables.
+require_once(dirname(__FILE__) . '/PHPTables/include.php');
+use PHPTables;
 
 $data = array(
 	array(0, 1, 2, 3, 4, 5),
@@ -170,10 +170,10 @@ $data = array(
 	array(12, 13, 14, 15, 16, 17)
 );
 
-$table = new MT\Tables\Collapsed(7, 4); // X x Y.
+$table = new PHPTables\Tables\Collapsed(7, 4); // X x Y.
 
 $table->callback(
-	MT\TYPE_CELL, 
+	PHPTables\TYPE_CELL, 
 	'value',
 	function($cell) use ($data)
 	{
@@ -182,7 +182,7 @@ $table->callback(
 );
 
 $table->callback(
-	MT\TYPE_COLUMN, 
+	PHPTables\TYPE_COLUMN, 
 	'total',
 	function($column)
 	{
@@ -198,7 +198,7 @@ $table->callback(
 );
 
 $table->callback(
-	MT\TYPE_ROW, 
+	PHPTables\TYPE_ROW, 
 	'total',
 	function($row)
 	{
@@ -220,7 +220,7 @@ $table->map(
 		return $cell->value;
 	},
 	array(
-		MT\TYPE_TABLE => array(
+		PHPTables\TYPE_TABLE => array(
 			'border' => function($table) { return '1'; }
 		)
 	)
@@ -230,7 +230,7 @@ $table->map(
 	'even,odd',
 	null,
 	array(
-		MT\TYPE_CELL => array(
+		PHPTables\TYPE_CELL => array(
 			'style' => function($cell) { return 'background-color: lightgrey;'; }
 		)
 	)
@@ -243,7 +243,7 @@ $table->map(
 		return ($cell->value = $cell->column->total); // Total the column, using callbacks. Guaranteed to run only once.
 	},
 	array(
-		MT\TYPE_CELL => array(
+		PHPTables\TYPE_CELL => array(
 			'style' => function($row) { return 'font-weight: bold;'; }
 		)
 	)
@@ -256,7 +256,7 @@ $table->map(
 		return ($cell->value = $cell->row->total); // Total the row, using callbacks. Guaranteed to run only once.
 	},
 	array(
-		MT\TYPE_CELL => array(
+		PHPTables\TYPE_CELL => array(
 			'style' => function($cell) { return 'font-weight: bold;'; }
 		)
 	)
@@ -269,7 +269,7 @@ $table->map(
 		return ($cell->row->total + $cell->column->total);
 	},
 	array(
-		MT\TYPE_CELL => array(
+		PHPTables\TYPE_CELL => array(
 			'style' => function($cell, $render) { return $render . ' color: red;'; }
 		)
 	)
