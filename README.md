@@ -32,7 +32,7 @@ Amorphous data classes, as mentioned, use callbacks to initiate its data. Create
 ```php
 use MatrixTables as MT;
 
-$table = MT\Tables\Collapsed(7, 4);
+$table = new MT\Tables\Collapsed(7, 4);
 
 $table->callback(
 	MT\TYPE_CELL, 
@@ -69,7 +69,7 @@ Return a false or a MatrixTables\Table::SKIP to skip the rendering of the cell.
 ```php
 use MatrixTables as MT;
 
-$table = MT\Tables\Collapsed(7, 4);
+$table = new MT\Tables\Collapsed(7, 4);
 
 $table->map(
 	'*,last',
@@ -110,7 +110,7 @@ On rendering this cell covers (4, 1), (5, 1), (4, 2), and (5, 2). Selecting the 
 ```php
 use MatrixTables as MT;
 
-$table = MT\Tables\Collapsed(7, 4);
+$table = new MT\Tables\Collapsed(7, 4);
 
 $expandedCell = $table->cell(4, 1)->expand(2, 2);
 
@@ -170,7 +170,7 @@ $data = array(
 	array(12, 13, 14, 15, 16, 17)
 );
 
-$table = MT\Tables\Collapsed(7, 4); // X x Y
+$table = new MT\Tables\Collapsed(7, 4); // X x Y.
 
 $table->callback(
 	MT\TYPE_CELL, 
