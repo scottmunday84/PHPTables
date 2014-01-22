@@ -19,7 +19,7 @@ I will delve more into the topic once I see the need, have the desire, and see a
 
 ## Callbacks
 
-Amorphous data classes, as mentioned, use callbacks to initiate its data. Create a callback to setup a callback on a table, column, row, or cell.
+Amorphous data classes, as mentioned, use callbacks to initiate its data. Create a callback to setup a callback on a table, section, column, row, or cell.
 
 * PHPTables\TYPE_TABLE
 * PHPTables\TYPE_SECTION
