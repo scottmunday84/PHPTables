@@ -30,8 +30,6 @@ Amorphous data classes, as mentioned, use callbacks to initiate its data. Create
 ### Example
 
 ```php
-use PHPTables;
-
 $table = new PHPTables\Tables\Collapsed(7, 4);
 
 $table->callback(
@@ -62,13 +60,11 @@ To render cells within the table, you map to a cell selection. The selection is 
 * #: An index in replace of the pound sign (#).
 * ;: A selection separator. Allows you to group multiple selections into one selection.
 
-Return a false or a MatrixTables\Table::SKIP to skip the rendering of the cell.
+Return a false or a PHPTables\Table::SKIP to skip the rendering of the cell.
 
 ### Example
 
 ```php
-use PHPTables;
-
 $table = new PHPTables\Tables\Collapsed(7, 4);
 
 $table->map(
@@ -108,8 +104,6 @@ You are able to expand a cell on the rendering of the cell. Note that selecting 
 On rendering this cell covers (4, 1), (5, 1), (4, 2), and (5, 2). Selecting the cell at (5, 2) will not return the expanded cell, but the underlying cell on the grid. This is built for convenience, so you can calculate sums and averages on straight columns and rows (i.e. the underlying structure) and not on the rendered layout.
 
 ```php
-use PHPTables;
-
 $table = new PHPTables\Tables\Collapsed(7, 4);
 
 $expandedCell = $table->cell(4, 1)->expand(2, 2);
@@ -162,7 +156,6 @@ GitHub strips out all styling associated with HTML tags. Run the example on your
 
 // An example setup using PHPTables.
 require_once(dirname(__FILE__) . '/PHPTables/include.php');
-use PHPTables;
 
 $data = array(
 	array(0, 1, 2, 3, 4, 5),
