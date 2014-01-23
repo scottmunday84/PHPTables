@@ -19,7 +19,7 @@ I will delve more into the topic once I see the need, have the desire, and see a
 
 ## Callbacks
 
-Amorphous data classes, as mentioned, use callbacks to initiate its data. Create a callback to setup a callback on a table, column, row, or cell.
+Amorphous data classes, as mentioned, use callbacks to initiate its data. Create a callback to setup a callback on a table, section, column, row, or cell.
 
 * PHPTables\TYPE_TABLE
 * PHPTables\TYPE_SECTION
@@ -30,6 +30,12 @@ Amorphous data classes, as mentioned, use callbacks to initiate its data. Create
 ### Example
 
 ```php
+$data = array(
+	array(0, 1, 2, 3, 4, 5),
+	array(6, 7, 8, 9, 10, 11),
+	array(12, 13, 14, 15, 16, 17)
+);
+
 $table = new PHPTables\Tables\Collapsed(7, 4);
 
 $table->callback(
@@ -60,7 +66,7 @@ To render cells within the table, you map to a cell selection. The selection is 
 * #: An index in replace of the pound sign (#).
 * ;: A selection separator. Allows you to group multiple selections into one selection.
 
-Return a false or a PHPTables\Table::SKIP to skip the rendering of the cell.
+Return a false or a PHPTables\SKIP to skip the rendering of the cell.
 
 ### Example
 
