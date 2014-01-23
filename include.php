@@ -301,7 +301,7 @@ class Section extends PHPTables\Amorphous
 					$tmp = range(1, $max, 2);
 				}
 			}
-			elseif (preg_match('/0|[1-9][0-9]*-0|[1-9][0-9]*/', $selection)) // Range.
+			elseif (preg_match('/(0|([1-9][0-9]*))-(0|([1-9][0-9]*))/', $selection)) // Range.
 			{
 				list($start, $stop) = explode('-', $selection);
 				
@@ -468,11 +468,23 @@ class Section extends PHPTables\Amorphous
 								
 				if ($this->_renderMap[$b][$a][PHPTables\RENDER] !== PHPTables\SKIP)
 				{
-					$render = ($this->_renderMap[$b][$a][PHPTables\RENDER] ? $this->_render($cell, $this->_renderMap[$b][$a][PHPTables\RENDER]) : '&nsbp;');
+					$render = ($this->_renderMap[$b][$a][PHPTables\RENDER] ? $this->_render($cell, $this->_renderMap[$b][$a][PHPTables\RENDER]) : '&nbsp;');
 				
 					if ($render === PHPTables\SKIP) { continue; }
 					
-					echo "\t\t\t" . '<' . $this->_cellTag . ' colspan="' . htmlentities($cell->columns) . '" rowspan="' . htmlentities($cell->rows) . '"' . 
+					echo "\t\t\t" . '<' . $this->_cellTag;
+					
+					if ($cell->columns > 1)
+					{
+						echo ' colspan="' . htmlentities($cell->columns) . '"';
+					}
+					
+					if ($cell->rows > 1)
+					{
+						echo ' rowspan="' . htmlentities($cell->rows) . '"';
+					}						
+
+					echo 
 						$this->_renderAttributes(
 							$this->_processAttributes($this->column($b), $this->_renderMap[$b][$this->_rowCount]),
 							$this->_processAttributes($cell, array_slice($this->_renderMap[$b][$a], 1))
@@ -552,11 +564,23 @@ class Collapsed extends Table
 								
 				if ($this->_renderMap[$b][$a][PHPTables\RENDER] !== PHPTables\SKIP)
 				{
-					$render = ($this->_renderMap[$b][$a][PHPTables\RENDER] ? $this->_render($cell, $this->_renderMap[$b][$a][PHPTables\RENDER]) : '&nsbp;');
+					$render = ($this->_renderMap[$b][$a][PHPTables\RENDER] ? $this->_render($cell, $this->_renderMap[$b][$a][PHPTables\RENDER]) : '&nbsp;');
 				
 					if ($render === PHPTables\SKIP) { continue; }
 					
-					echo "\t\t" . '<' . $this->_cellTag . ' colspan="' . htmlentities($cell->columns) . '" rowspan="' . htmlentities($cell->rows) . '"' . 
+					echo "\t\t" . '<' . $this->_cellTag;
+					
+					if ($cell->columns > 1)
+					{
+						echo ' colspan="' . htmlentities($cell->columns) . '"';
+					}
+					
+					if ($cell->rows > 1)
+					{
+						echo ' rowspan="' . htmlentities($cell->rows) . '"';
+					}
+					
+					echo
 						$this->_renderAttributes(
 							$this->_processAttributes($this->column($b), $this->_renderMap[$b][$this->_rowCount]),
 							$this->_processAttributes($cell, array_slice($this->_renderMap[$b][$a], 1))
