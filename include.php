@@ -7,6 +7,16 @@ const TYPE_CELL = 3;
 const TYPE_ROW = 4;
 const TYPE_COLUMN = 5;
 
+const HTML_TAG_TABLE = 'table';
+
+const HTML_TAG_THEAD = 'thead';
+const HTML_TAG_TBODY = 'tbody';
+const HTML_TAG_TFOOT = 'tfoot';
+
+const HTML_TAG_TR = 'tr';
+const HTML_TAG_TH = 'th';
+const HTML_TAG_TD = 'td';
+
 const TABLE_HBF = 1;
 const TABLE_COLLAPSED = 2;
 
@@ -14,7 +24,6 @@ const SECTION_HEADER = 1;
 const SECTION_BODY = 2;
 const SECTION_FOOTER = 3;
 
-const RENDER = 0;	
 const SKIP = false;	
 
 class Amorphous
@@ -45,8 +54,78 @@ class Amorphous
 namespace PHPTables\Types;
 use PHPTables;
 
-class Column extends PHPTables\Amorphous 
+class AmorphousElement extends PHPTables\Amorphous 
+{
+	protected $_tag = null;
+	protected $_attributes = array();
+	
+	public function setAttribute($attribute, $callback)
+	{
+		if (is_callable($callback))
+		{
+			if (!isset($this->_attributes[$attribute]))
+			{
+				$this->_attributes[$attribute] =  array();
+			}
+		
+			$this->_attributes[$attribute][] = $callback;
+		}
+	}
+	
+	public function getAttributes()
+	{
+		$rtn = array();
+		
+		foreach ($this->_attributes as $attribute => $list)
+		{
+			$tmp = PHPTables\SKIP;
+			
+			foreach ($list as $callback)
+			{
+				$tmp = $callback($this, $tmp);
+			}
+
+			$rtn[$attribute] = $tmp;
+		}
+		
+		return $rtn;
+	}
+	
+	protected function _getAttributeString()
+	{
+		$rtn = '';
+		$attributes = $this->getAttributes();
+	
+		foreach ($attributes as $attribute => $value)
+		{
+			if ($value === PHPTables\SKIP) { continue; }
+		
+			$rtn .= ' ' . htmlentities($attribute) . '="' . htmlentities($value) . '"';
+		}
+		
+		return $rtn;
+	}
+	
+	public function beginElement()
+	{
+		return ($this->_tag ? '<' . $this->_tag . $this->_getAttributeString() . '>' : '');
+	}
+	
+	public function endElement()
+	{
+		return ($this->_tag ? '</' . $this->_tag . '>' : '');
+	}
+	
+	public function element()
+	{
+		return ($this->_tag ? '<' . $this->_tag . $this->_getAttributeString() . ' />' : '');
+	}
+};
+
+class Column extends AmorphousElement
 { 
+	protected $_tag = PHPTables\HTML_TAG_TD;
+
 	public $table;
 	public $section;
 	
@@ -65,8 +144,15 @@ class Column extends PHPTables\Amorphous
 	}
 };
 
-class Row extends PHPTables\Amorphous 
+class HeaderColumn extends Column
+{
+	protected $_tag = PHPTables\HTML_TAG_TH;
+}
+
+class Row extends AmorphousElement
 { 
+	protected $_tag = PHPTables\HTML_TAG_TR;
+	
 	public $table;
 	public $section;
 	
@@ -85,8 +171,10 @@ class Row extends PHPTables\Amorphous
 	}
 };
 
-class Cell extends PHPTables\Amorphous 
+class Cell extends AmorphousElement
 { 
+	protected $_tag = PHPTables\HTML_TAG_TD;
+
 	public $table;
 	public $section;
 	
@@ -95,6 +183,32 @@ class Cell extends PHPTables\Amorphous
 	
 	public $rows = 1;
 	public $columns = 1;
+	
+	protected $_render = array();
+	protected $_willRender = true;
+	
+	protected $_skipped = array();
+	
+	public function getAttributes()
+	{
+		$rtn = array();
+		
+		$columnAttributes = $this->column->getAttributes();
+		
+		foreach ($this->_attributes as $attribute => $list)
+		{
+			$tmp = (isset($columnAttributes[$attribute]) ? $columnAttributes[$attribute] : PHPTables\SKIP);
+			
+			foreach ($list as $callback)
+			{
+				$tmp = $callback($this, $tmp);
+			}
+
+			$rtn[$attribute] = $tmp;
+		}
+		
+		return $rtn;
+	}	
 	
 	function __construct($table, $section, $column, $row)
 	{
@@ -111,19 +225,93 @@ class Cell extends PHPTables\Amorphous
 	{
 		$this->columns = ($columns <= 0 ? 1 : (int)$columns);
 		$this->rows = ($rows <= 0 ? 1 : (int)$rows);
+		
+		for ($a = $this->column->index, $b = min($a + $columns, $this->section->count(PHPTables\TYPE_COLUMN)); $a < $b; ++$a)
+		{		
+			for ($c = $this->row->index, $d = min($c + $rows, $this->section->count(PHPTables\TYPE_ROW)); $c < $d; ++$c)
+			{
+				if ($a == $this->column->index && $c == $this->row->index) { continue; }
+				
+				$cell = $this->_skipped[] = $this->section->cell($a, $c);				
+				$cell->skip();
+			}
+		}
+	}
+	
+	public function skip()
+	{
+		foreach ($this->_skipped as $skipped)
+		{
+			$skipped->unskip();
+		}
+	
+		return ($this->_willRender = PHPTables\SKIP);
+	}
+	
+	public function unskip()
+	{
+		 return ($this->_willRender = true);
+	}	
+	
+	public function setRender($callback)
+	{
+		if (is_callable($callback))
+		{
+			$this->_render[] = $callback;
+		}
+	}
+	
+	public function render()
+	{
+		$render = PHPTables\SKIP;
+		
+		foreach ($this->_render as $callback)
+		{
+			$render = $callback($this, $render);
+		}
+		
+		if ($render === PHPTables\SKIP || $this->_willRender === PHPTables\SKIP) { return; }
+		
+		if ($this->columns > 1)
+		{
+			$this->setAttribute(
+				'colspan', 
+				function($cell)
+				{
+					return $cell->columns;
+				}
+			);
+		}
+		
+		if ($this->rows > 1)
+		{
+			$this->setAttribute(
+				'rowspan', 
+				function($cell)
+				{
+					return $cell->rows;
+				}
+			);
+		}		
+		
+		echo $this->beginElement() . ($render !== PHPTables\SKIP ? $render : '&nbsp;') . $this->endElement();
 	}
 };
+
+class HeaderCell extends Cell
+{
+	protected $_tag = PHPTables\HTML_TAG_TH;	
+}
 
 namespace PHPTables\Sections;
 use PHPTables;
 
-class Section extends PHPTables\Amorphous
+class Section extends PHPTables\Types\AmorphousElement
 {
 	public $table;
 
-	protected $_sectionTag = 'tbody';
-	protected $_cellTag = 'td';
-
+	protected $_tag = PHPTables\HTML_TAG_TBODY;
+	
 	protected $_columns = array();
 	protected $_rows = array();
 	protected $_cells = array();
@@ -136,28 +324,14 @@ class Section extends PHPTables\Amorphous
 	protected $_rowProperties = array();
 	protected $_cellProperties = array();
 	
-	protected $_tableAttributes = array();
-	
-	protected $_renderMap = array();		
-
-	function __construct($table, &$properties, &$attributes, $columns, $rows)
+	function __construct($table, &$tableProperties, $columns, $rows)
 	{
 		$this->table = $table;
-		$this->_tableProperties = &$properties;
-		$this->_tableAttributes = &$attributes;
-	
+		
+		$this->_tableProperties = &$tableProperties;
+		
 		$this->_columnCount = ($columns <= 0 ? 1 : (int)$columns);
 		$this->_rowCount = ($rows <= 0 ? 1 : (int)$rows);		
-		
-		for ($a = 0; $a <= $this->_columnCount; ++$a)
-		{
-			$this->_renderMap[$a] = array();
-			
-			for ($b = 0; $b <= $this->_rowCount; ++$b)
-			{
-				$this->_renderMap[$a][$b] = array(PHPTables\RENDER => null);
-			}
-		}		
 	}
 	
 	protected function _build($type)
@@ -168,7 +342,7 @@ class Section extends PHPTables\Amorphous
 				list($ignore, $column) = func_get_args();
 				
 				if (!isset($this->_columns[$column]))
-				{
+				{				
 					$this->_columns[$column] = new PHPTables\Types\Column($this->table, $this, $column, $this->_rowCount);
 				}				
 				
@@ -211,6 +385,17 @@ class Section extends PHPTables\Amorphous
 	{
 		return $this->_build(PHPTables\TYPE_CELL, $column, $row);
 	}
+	
+	public function count($type)
+	{
+		switch ($type)
+		{
+			case PHPTables\TYPE_COLUMN:
+				return $this->_columnCount;
+			case PHPTables\TYPE_ROW:
+				return $this->_rowCount;
+		}
+	}	
 
 	public function properties($type)
 	{
@@ -321,36 +506,7 @@ class Section extends PHPTables\Amorphous
 		return array_unique($selected);
 	}
 	
-	protected function _assignRenderMapRender(&$location, $callback)
-	{
-		if (is_callable($callback))
-		{
-			if (!is_array(@$location))
-			{
-				$location = array();
-			}
-		
-			$location[] = $callback;
-		}
-	}
-	
-	protected function _assignRenderMapAttributes(&$location, $attributes)
-	{
-		foreach ($attributes as $attribute => $callback)
-		{
-			if (is_callable($callback))
-			{
-				if (!is_array(@$location[$attribute]))
-				{
-					$location[$attribute] = array();
-				}
-		
-				$location[$attribute][] = $callback;
-			}
-		}
-	}	
-	
-	public function map($selection, $callback, $attributes = array())
+	public function map($selection, $renderCallback, $attributes = array())
 	{
 		list($x, $y) = explode(',', $selection);
 		
@@ -363,18 +519,28 @@ class Section extends PHPTables\Amorphous
 		{
 			foreach ($y as $yOffset)
 			{
-				$this->_assignRenderMapRender($this->_renderMap[$xOffset][$yOffset][PHPTables\RENDER], $callback);
+				$cell = $this->cell($xOffset, $yOffset);
+				
+				$cell->setRender($renderCallback);
 				
 				// Assign attributes.
 				if (isset($attributes[PHPTables\TYPE_CELL]) && is_array($attributes[PHPTables\TYPE_CELL]))
 				{
-					$this->_assignRenderMapAttributes($this->_renderMap[$xOffset][$yOffset], $attributes[PHPTables\TYPE_CELL]); // All other index values are properties of the cell.
+					foreach ($attributes[PHPTables\TYPE_CELL] as $attribute => $callback)
+					{
+						$cell->setAttribute($attribute, $callback);
+					}
 				}
 				
 				// Assign attributes.
 				if (!$appliedRowAttributes && isset($attributes[PHPTables\TYPE_ROW]) && is_array($attributes[PHPTables\TYPE_ROW]))
 				{
-					$this->_assignRenderMapAttributes($this->_renderMap[$this->_columnCount][$yOffset], $attributes[PHPTables\TYPE_ROW]);
+					$row = $this->row($yOffset);
+					
+					foreach ($attributes[PHPTables\TYPE_ROW] as $attribute => $callback)
+					{
+						$row->setAttribute($attribute, $callback);
+					}
 				}
 			}
 			
@@ -384,238 +550,121 @@ class Section extends PHPTables\Amorphous
 			// Assign attributes.
 			if (isset($attributes[PHPTables\TYPE_COLUMN]) && is_array($attributes[PHPTables\TYPE_COLUMN]))
 			{
-				$this->_assignRenderMapAttributes($this->_renderMap[$xOffset][$this->_rowCount], $attributes[PHPTables\TYPE_COLUMN]);
+				$column = $this->column($xOffset);
+				
+				foreach ($attributes[PHPTables\TYPE_COLUMN] as $attribute => $callback)
+				{
+					$column->setAttribute($attribute, $callback);
+				}
 			}
 		}
 		
 		// Assign attributes.
 		if (isset($attributes[PHPTables\TYPE_SECTION]) && is_array($attributes[PHPTables\TYPE_SECTION]))
 		{
-			$this->_assignRenderMapAttributes($this->_renderMap[$this->_columnCount][$this->_rowCount], $attributes[PHPTables\TYPE_SECTION]);
+			foreach ($attributes[PHPTables\TYPE_SECTION] as $attribute => $callback)
+			{
+				$this->setAttribute($attribute, $callback);
+			}
 		}
 		
 		// Assign attributes.
 		if (isset($attributes[PHPTables\TYPE_TABLE]) && is_array($attributes[PHPTables\TYPE_TABLE]))
 		{
-			$this->_assignRenderMapAttributes($this->_tableAttributes, $attributes[PHPTables\TYPE_TABLE]);
-		}
-	}
-	
-	protected function _processAttributes($element, $attributes, $previousAttributes = array())
-	{
-		$rtn = $previousAttributes;
-		
-		if (is_array($attributes))
-		{
-			foreach ($attributes as $attribute => $callbacks)
+			$table = $this->table;
+			
+			foreach ($attributes[PHPTables\TYPE_TABLE] as $attribute => $callback)
 			{
-				if (is_array($callbacks))
-				{
-					foreach ($callbacks as $callback)
-					{
-						$rtn[$attribute] = $callback($element, @$rtn[$attribute]);
-					}
-				}
-			}
+				$table->setAttribute($attribute, $callback);
+			}			
 		}
-		
-		return $rtn;
 	}
-	
-	protected function _renderAttributes()
-	{
-		$attributes = array();
-		$parameters = func_get_args();
-		
-		$rtn = '';
-		
-		foreach ($parameters as $parameter)
-		{
-			$attributes = array_merge($attributes, $parameter);
-		}
-		
-		foreach ($attributes as $attribute => $value)
-		{
-			if (value !== PHPTables\SKIP)
-			{
-				$rtn .= ' ' . htmlentities($attribute) . '="' . htmlentities($value) . '"';			
-			}
-		}
-		
-		return $rtn;
-	}
-	
-	public function _render($element, $renders)
-	{
-		$rtn = '';
-		
-		foreach ($renders as $render)
-		{
-			$rtn = $render($element, $rtn);
-		}
-		
-		return $rtn;
-	}	
 	
 	public function render()
 	{	
-		echo "\t" . '<' . $this->_sectionTag . $this->_renderAttributes($this->_processAttributes($this, $this->_renderMap[$this->_columnCount][$this->_rowCount])) . '>' . PHP_EOL;
+		echo "\t" . $this->beginElement() . PHP_EOL;
 	
 		for ($a = 0; $a < $this->_rowCount; ++$a)
 		{
-			echo "\t\t" . '<tr' . $this->_renderAttributes($this->_processAttributes($this->row($a), $this->_renderMap[$this->_columnCount][$a])) . '>' . PHP_EOL;
+			$row = $this->row($a);
+			
+			echo "\t\t" . $row->beginElement() . PHP_EOL;
 		
 			for ($b = 0; $b < $this->_columnCount; ++$b)
 			{
-				$cell = $this->_build(PHPTables\TYPE_CELL, $b, $a); // X x Y
-								
-				if ($this->_renderMap[$b][$a][PHPTables\RENDER] !== PHPTables\SKIP)
-				{
-					$render = ($this->_renderMap[$b][$a][PHPTables\RENDER] ? $this->_render($cell, $this->_renderMap[$b][$a][PHPTables\RENDER]) : '&nbsp;');
-				
-					if ($render === PHPTables\SKIP) { continue; }
-					
-					echo "\t\t\t" . '<' . $this->_cellTag;
-					
-					if ($cell->columns > 1)
-					{
-						echo ' colspan="' . htmlentities($cell->columns) . '"';
-					}
-					
-					if ($cell->rows > 1)
-					{
-						echo ' rowspan="' . htmlentities($cell->rows) . '"';
-					}						
-
-					echo 
-						$this->_renderAttributes(
-							$this->_processAttributes($this->column($b), $this->_renderMap[$b][$this->_rowCount]),
-							$this->_processAttributes($cell, array_slice($this->_renderMap[$b][$a], 1))
-						) .
-						'>';
-					echo $render;
-					echo '</' . $this->_cellTag . '>' . PHP_EOL;
-					
-					// Map to the cell expansion.
-					for ($c = $a, $d = min($this->_rowCount, $c + $cell->rows); $c < $d; ++$c)
-					{
-						for ($e = $b, $f = min($this->_columnCount, $e + $cell->columns); $e < $f; ++$e)
-						{						
-							if ($c == $a && $e == $b) { continue; }
-							
-							$childCell = $this->_build(PHPTables\TYPE_CELL, $e, $c);
-							
-							if (is_array($this->_renderMap[$e][$c][PHPTables\RENDER]))
-							{
-								$this->_render($childCell, $this->_renderMap[$e][$c][PHPTables\RENDER]);
-							}
-							
-							$this->_renderMap[$e][$c][PHPTables\RENDER] = PHPTables\SKIP;
-						}
-					}					
-				}
+				echo "\t\t\t";
+				echo $this->cell($b, $a)->render();
+				echo PHP_EOL;						
 			}
 			
-			echo "\t\t" . '</tr>' . PHP_EOL;			
+			echo "\t\t" . $row->endElement() . PHP_EOL;			
 		}
 		
-		echo "\t" . '</' . $this->_sectionTag . '>' . PHP_EOL;
-		
+		echo "\t" . $this->endElement() . PHP_EOL;		
 	}	
 };
 
-class Header extends Section
+class HeaderSection extends Section
 {
-	protected $_sectionTag = 'thead';
-	protected $_cellTag = 'th';
-}
+	protected function _build($type)
+	{
+		switch ($type)
+		{
+			case PHPTables\TYPE_ROW:
+				list($type, $row) = func_get_args();
+				
+				return parent::_build($type, $row);							
+			case PHPTables\TYPE_COLUMN:
+				list($ignore, $column) = func_get_args();
+				
+				if (!isset($this->_columns[$column]))
+				{				
+					$this->_columns[$column] = new PHPTables\Types\HeaderColumn($this->table, $this, $column, $this->_rowCount);
+				}				
+				
+				return $this->_columns[$column];
+			case PHPTables\TYPE_CELL: // Cell considers rows and columns.
+				list($ignore, $column, $row) = func_get_args();
+				
+				$_column = $this->_build(PHPTables\TYPE_COLUMN, $column);
+				$_row = $this->_build(PHPTables\TYPE_ROW, $row);				
+				
+				if (!isset($this->_cells[$column][$row]))
+				{
+					$this->_cells[$column][$row] = new PHPTables\Types\HeaderCell($this->table, $this, $_column, $_row);
+				}				
+				
+				return $this->_cells[$column][$row];
+		}
+	}
+};
 
 class Body extends Section { };
 
-class Footer extends Section
+class Header extends HeaderSection
 {
-	protected $_sectionTag = 'tfoot';
-	protected $_cellTag = 'th';
+	protected $_tag = PHPTables\HTML_TAG_THEAD;
+	protected $_cellTag = PHPTables\HTML_TAG_TH;
+}
+
+class Footer extends HeaderSection
+{
+	protected $_tag = PHPTables\HTML_TAG_TFOOT;
+	protected $_cellTag = PHPTables\HTML_TAG_TH;
 };
 
 namespace PHPTables\Tables;
 use PHPTables;
 
-class Table extends PHPTables\Sections\Section 
-{
-	protected $_attributes = array();
+class Table extends PHPTables\Sections\Section {
+	protected $_tag = PHPTables\HTML_TAG_TABLE;
 };
 
 class Collapsed extends Table
 {
 	function __construct($columns, $rows)
 	{		
-		parent::__construct($this, $this->_properties, $this->_attributes, $columns, $rows);
-	}
-	
-	public function render()
-	{
-		echo '<table' . $this->_renderAttributes($this->_processAttributes($this, $this->_attributes)) . '>' . PHP_EOL;
-		
-		for ($a = 0; $a < $this->_rowCount; ++$a)
-		{
-			echo "\t" . '<tr' . $this->_renderAttributes($this->_processAttributes($this->row($a), $this->_renderMap[$this->_columnCount][$a])) . '>' . PHP_EOL;
-		
-			for ($b = 0; $b < $this->_columnCount; ++$b)
-			{
-				$cell = $this->_build(PHPTables\TYPE_CELL, $b, $a); // X x Y
-								
-				if ($this->_renderMap[$b][$a][PHPTables\RENDER] !== PHPTables\SKIP)
-				{
-					$render = ($this->_renderMap[$b][$a][PHPTables\RENDER] ? $this->_render($cell, $this->_renderMap[$b][$a][PHPTables\RENDER]) : '&nbsp;');
-				
-					if ($render === PHPTables\SKIP) { continue; }
-					
-					echo "\t\t" . '<' . $this->_cellTag;
-					
-					if ($cell->columns > 1)
-					{
-						echo ' colspan="' . htmlentities($cell->columns) . '"';
-					}
-					
-					if ($cell->rows > 1)
-					{
-						echo ' rowspan="' . htmlentities($cell->rows) . '"';
-					}
-					
-					echo
-						$this->_renderAttributes(
-							$this->_processAttributes($this->column($b), $this->_renderMap[$b][$this->_rowCount]),
-							$this->_processAttributes($cell, array_slice($this->_renderMap[$b][$a], 1))
-						) .
-						'>';
-					echo $render;
-					echo '</td>' . PHP_EOL;
-					
-					// Map to the cell expansion.
-					for ($c = $a, $d = min($this->_rowCount, $c + $cell->rows); $c < $d; ++$c)
-					{
-						for ($e = $b, $f = min($this->_columnCount, $e + $cell->columns); $e < $f; ++$e)
-						{						
-							if ($c == $a && $e == $b) { continue; }
-							
-							$childCell = $this->_build(PHPTables\TYPE_CELL, $e, $c);
-							
-							if (is_array($this->_renderMap[$e][$c][PHPTables\RENDER]))
-							{
-								$this->_render($childCell, $this->_renderMap[$e][$c][PHPTables\RENDER]);
-							}
-							
-							$this->_renderMap[$e][$c][PHPTables\RENDER] = PHPTables\SKIP;
-						}
-					}					
-				}
-			}
-			
-			echo "\t" . '</tr>' . PHP_EOL;			
-		}
-		
-		echo '</table>' . PHP_EOL;
+		parent::__construct($this, $this->_properties, $columns, $rows);
 	}
 };
 
@@ -628,8 +677,8 @@ class HBF extends Table
 	function __construct()
 	{
 		$this->table = $this;
+		
 		$this->_tableProperties = $this->_properties;
-		$this->_tableAttributes = $this->_attributes;
 	}
 	
 	private function _setSection($section, $arguments)
@@ -639,11 +688,11 @@ class HBF extends Table
 		switch ($section)
 		{
 			case PHPTables\SECTION_HEADER:
-				return new PHPTables\Sections\Header($this, $this->_properties, $this->_attributes, $columns, $rows);
+				return new PHPTables\Sections\Header($this, $this->_properties, $columns, $rows);
 			case PHPTables\SECTION_BODY:
-				return new PHPTables\Sections\Body($this, $this->_properties, $this->_attributes, $columns, $rows);
+				return new PHPTables\Sections\Body($this, $this->_properties, $columns, $rows);
 			case PHPTables\SECTION_FOOTER:
-				return new PHPTables\Sections\Footer($this, $this->_properties, $this->_attributes, $columns, $rows);
+				return new PHPTables\Sections\Footer($this, $this->_properties, $columns, $rows);
 		}
 		
 		return null;
@@ -681,7 +730,7 @@ class HBF extends Table
 	
 	public function render()
 	{
-		echo '<table' . $this->_renderAttributes($this->_processAttributes($this, $this->_attributes)) . '>' . PHP_EOL;
+		echo $this->beginElement() . PHP_EOL;
 		
 		if ($this->_header)
 		{
@@ -698,6 +747,6 @@ class HBF extends Table
 			$this->_footer->render();
 		}
 		
-		echo '</table>' . PHP_EOL;
+		echo $this->endElement();
 	}
 };
