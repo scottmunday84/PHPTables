@@ -20,7 +20,7 @@ const SKIP = false;
 class Amorphous
 {
 	protected $_values = array();
-	protected $_callbacks = array();
+	protected $_properties = array();
 	
 	function __get($property)
 	{
@@ -28,9 +28,9 @@ class Amorphous
 		{
 			return $this->_values[$property];
 		}
-		elseif (isset($this->_callbacks[$property]) && is_callable($this->_callbacks[$property]))
+		elseif (isset($this->_properties[$property]) && is_callable($this->_properties[$property]))
 		{
-			return ($this->_values[$property] = $this->_callbacks[$property]($this));
+			return ($this->_values[$property] = $this->_properties[$property]($this));
 		}
 		
 		return null;
@@ -61,7 +61,7 @@ class Column extends PHPTables\Amorphous
 		$this->index = $column;		
 		$this->rows = $rows;		
 
-		$this->_callbacks = $section->callbacks(PHPTables\TYPE_COLUMN);			
+		$this->_properties = $section->properties(PHPTables\TYPE_COLUMN);			
 	}
 };
 
@@ -81,7 +81,7 @@ class Row extends PHPTables\Amorphous
 		$this->index = $row;
 		$this->columns = $columns;		
 
-		$this->_callbacks = $section->callbacks(PHPTables\TYPE_ROW);							
+		$this->_properties = $section->properties(PHPTables\TYPE_ROW);							
 	}
 };
 
@@ -104,7 +104,7 @@ class Cell extends PHPTables\Amorphous
 		$this->column = $column;
 		$this->row = $row;
 		
-		$this->_callbacks = $section->callbacks(PHPTables\TYPE_CELL);					
+		$this->_properties = $section->properties(PHPTables\TYPE_CELL);					
 	}
 
 	public function expand($columns = 1, $rows = 1)
@@ -131,19 +131,19 @@ class Section extends PHPTables\Amorphous
 	protected $_columnCount = 0;	
 	protected $_rowCount = 0;
 	
-	protected $_tableCallbacks = array();
-	protected $_columnCallbacks = array();
-	protected $_rowCallbacks = array();
-	protected $_cellCallbacks = array();
+	protected $_tableProperties = array();
+	protected $_columnProperties = array();
+	protected $_rowProperties = array();
+	protected $_cellProperties = array();
 	
 	protected $_tableAttributes = array();
 	
 	protected $_renderMap = array();		
 
-	function __construct($table, &$callbacks, &$attributes, $columns, $rows)
+	function __construct($table, &$properties, &$attributes, $columns, $rows)
 	{
 		$this->table = $table;
-		$this->_tableCallbacks = &$callbacks;
+		$this->_tableProperties = &$properties;
 		$this->_tableAttributes = &$attributes;
 	
 		$this->_columnCount = ($columns <= 0 ? 1 : (int)$columns);
@@ -212,45 +212,45 @@ class Section extends PHPTables\Amorphous
 		return $this->_build(PHPTables\TYPE_CELL, $column, $row);
 	}
 
-	public function callbacks($type)
+	public function properties($type)
 	{
 		switch ($type)
 		{
 			case PHPTables\TYPE_TABLE:
-				return $this->_tableCallbacks;
+				return $this->_tableProperties;
 			case PHPTables\TYPE_SECTION:
-				return $this->_callbacks;
+				return $this->_properties;
 			case PHPTables\TYPE_COLUMN:
-				return $this->_columnCallbacks;
+				return $this->_columnProperties;
 			case PHPTables\TYPE_ROW:
-				return $this->_rowCallbacks;
+				return $this->_rowProperties;
 			case PHPTables\TYPE_CELL:
-				return $this->_cellCallbacks;
+				return $this->_cellProperties;
 		}
 		
 		return array(); // Return an empty array.
 	}
 	
-	public function callback($type, $property, $callback)
+	public function property($type, $property, $callback)
 	{
 		if (is_callable($callback))
 		{
 			switch ($type)
 			{
 				case PHPTables\TYPE_TABLE:
-					$this->_tableCallbacks[$property] = $callback;
+					$this->_tableProperties[$property] = $callback;
 					break;			
 				case PHPTables\TYPE_SECTION:
-					$this->_callbacks[$property] = $callback;
+					$this->_properties[$property] = $callback;
 					break;			
 				case PHPTables\TYPE_COLUMN:
-					$this->_columnCallbacks[$property] = $callback;
+					$this->_columnProperties[$property] = $callback;
 					break;
 				case PHPTables\TYPE_ROW:
-					$this->_rowCallbacks[$property] = $callback;
+					$this->_rowProperties[$property] = $callback;
 					break;
 				case PHPTables\TYPE_CELL:
-					$this->_cellCallbacks[$property] = $callback;
+					$this->_cellProperties[$property] = $callback;
 					break;
 			}
 		}
@@ -436,7 +436,10 @@ class Section extends PHPTables\Amorphous
 		
 		foreach ($attributes as $attribute => $value)
 		{
-			$rtn .= ' ' . htmlentities($attribute) . '="' . htmlentities($value) . '"';			
+			if (value !== PHPTables\SKIP)
+			{
+				$rtn .= ' ' . htmlentities($attribute) . '="' . htmlentities($value) . '"';			
+			}
 		}
 		
 		return $rtn;
@@ -547,7 +550,7 @@ class Collapsed extends Table
 {
 	function __construct($columns, $rows)
 	{		
-		parent::__construct($this, $this->_callbacks, $this->_attributes, $columns, $rows);
+		parent::__construct($this, $this->_properties, $this->_attributes, $columns, $rows);
 	}
 	
 	public function render()
@@ -625,7 +628,7 @@ class HBF extends Table
 	function __construct()
 	{
 		$this->table = $this;
-		$this->_tableCallbacks = $this->_callbacks;
+		$this->_tableProperties = $this->_properties;
 		$this->_tableAttributes = $this->_attributes;
 	}
 	
@@ -636,11 +639,11 @@ class HBF extends Table
 		switch ($section)
 		{
 			case PHPTables\SECTION_HEADER:
-				return new PHPTables\Sections\Header($this, $this->_callbacks, $this->_attributes, $columns, $rows);
+				return new PHPTables\Sections\Header($this, $this->_properties, $this->_attributes, $columns, $rows);
 			case PHPTables\SECTION_BODY:
-				return new PHPTables\Sections\Body($this, $this->_callbacks, $this->_attributes, $columns, $rows);
+				return new PHPTables\Sections\Body($this, $this->_properties, $this->_attributes, $columns, $rows);
 			case PHPTables\SECTION_FOOTER:
-				return new PHPTables\Sections\Footer($this, $this->_callbacks, $this->_attributes, $columns, $rows);
+				return new PHPTables\Sections\Footer($this, $this->_properties, $this->_attributes, $columns, $rows);
 		}
 		
 		return null;
