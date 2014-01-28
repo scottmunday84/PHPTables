@@ -189,27 +189,6 @@ class Cell extends AmorphousElement
 	
 	protected $_skipped = array();
 	
-	public function getAttributes()
-	{
-		$rtn = array();
-		
-		$columnAttributes = $this->column->getAttributes();
-		
-		foreach ($this->_attributes as $attribute => $list)
-		{
-			$tmp = (isset($columnAttributes[$attribute]) ? $columnAttributes[$attribute] : PHPTables\SKIP);
-			
-			foreach ($list as $callback)
-			{
-				$tmp = $callback($this, $tmp);
-			}
-
-			$rtn[$attribute] = $tmp;
-		}
-		
-		return $rtn;
-	}	
-	
 	function __construct($table, $section, $column, $row)
 	{
 		$this->table = $table;
@@ -219,6 +198,14 @@ class Cell extends AmorphousElement
 		$this->row = $row;
 		
 		$this->_properties = $section->properties(PHPTables\TYPE_CELL);					
+		
+		// At least show a nonblank space.
+		$this->_render = array(
+			function() 
+			{
+				return '&nbsp;'; 
+			}
+		);
 	}
 
 	public function expand($columns = 1, $rows = 1)
@@ -259,6 +246,27 @@ class Cell extends AmorphousElement
 		{
 			$this->_render[] = $callback;
 		}
+	}
+	
+	public function getAttributes()
+	{
+		$rtn = array();
+		
+		$columnAttributes = $this->column->getAttributes();
+		
+		foreach ($this->_attributes as $attribute => $list)
+		{
+			$tmp = (isset($columnAttributes[$attribute]) ? $columnAttributes[$attribute] : PHPTables\SKIP);
+			
+			foreach ($list as $callback)
+			{
+				$tmp = $callback($this, $tmp);
+			}
+
+			$rtn[$attribute] = $tmp;
+		}
+		
+		return $rtn;
 	}
 	
 	public function render()
