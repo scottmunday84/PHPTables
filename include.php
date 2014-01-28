@@ -17,9 +17,6 @@ const HTML_TAG_TR = 'tr';
 const HTML_TAG_TH = 'th';
 const HTML_TAG_TD = 'td';
 
-const TABLE_HBF = 1;
-const TABLE_COLLAPSED = 2;
-
 const SECTION_HEADER = 1;
 const SECTION_BODY = 2;
 const SECTION_FOOTER = 3;
