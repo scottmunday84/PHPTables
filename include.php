@@ -376,15 +376,15 @@ class Section extends PHPTables\Types\AmorphousElement
 		}
 	}			
 	
-	public function row($row)
-	{
-		return $this->_build(PHPTables\TYPE_ROW, $row);
-	}
-
 	public function column($column)
 	{
 		return $this->_build(PHPTables\TYPE_COLUMN, $column);
 	}
+	
+	public function row($row)
+	{
+		return $this->_build(PHPTables\TYPE_ROW, $row);
+	}	
 	
 	public function cell($column, $row)
 	{
@@ -598,7 +598,7 @@ class Section extends PHPTables\Types\AmorphousElement
 			for ($b = 0; $b < $this->_columnCount; ++$b)
 			{
 				echo "\t\t\t";
-				echo $this->cell($b, $a)->render();
+				$this->cell($b, $a)->render();
 				echo PHP_EOL;						
 			}
 			
