@@ -401,25 +401,6 @@ class Section extends PHPTables\Types\AmorphousElement
 				return $this->_rowCount;
 		}
 	}	
-
-	public function properties($type)
-	{
-		switch ($type)
-		{
-			case PHPTables\TYPE_TABLE:
-				return $this->_tableProperties;
-			case PHPTables\TYPE_SECTION:
-				return $this->_properties;
-			case PHPTables\TYPE_COLUMN:
-				return $this->_columnProperties;
-			case PHPTables\TYPE_ROW:
-				return $this->_rowProperties;
-			case PHPTables\TYPE_CELL:
-				return $this->_cellProperties;
-		}
-		
-		return array(); // Return an empty array.
-	}
 	
 	public function property($type, $property, $callback)
 	{
@@ -445,6 +426,25 @@ class Section extends PHPTables\Types\AmorphousElement
 			}
 		}
 	}
+	
+	public function properties($type)
+	{
+		switch ($type)
+		{
+			case PHPTables\TYPE_TABLE:
+				return $this->_tableProperties;
+			case PHPTables\TYPE_SECTION:
+				return $this->_properties;
+			case PHPTables\TYPE_COLUMN:
+				return $this->_columnProperties;
+			case PHPTables\TYPE_ROW:
+				return $this->_rowProperties;
+			case PHPTables\TYPE_CELL:
+				return $this->_cellProperties;
+		}
+		
+		return array(); // Return an empty array.
+	}	
 	
 	protected function _parseMapDimension($type, $selection)
 	{
