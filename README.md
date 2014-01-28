@@ -17,9 +17,9 @@ Amorphous data classes have much more application than my little project, but it
 
 I will delve more into the topic once I see the need, have the desire, and see an interest in the project.
 
-## Callbacks
+## Properties
 
-Amorphous data classes, as mentioned, use callbacks to initiate its data. Create a callback to setup a callback on a table, section, column, row, or cell.
+Amorphous data classes, as mentioned, use callbacks to initiate its data. Create a property with a callback on a table, section, column, row, or cell.
 
 * PHPTables\TYPE_TABLE
 * PHPTables\TYPE_SECTION
@@ -30,20 +30,12 @@ Amorphous data classes, as mentioned, use callbacks to initiate its data. Create
 ### Example
 
 ```php
-$data = array(
-	array(0, 1, 2, 3, 4, 5),
-	array(6, 7, 8, 9, 10, 11),
-	array(12, 13, 14, 15, 16, 17)
-);
-
-$table = new PHPTables\Tables\Collapsed(7, 4);
-
-$table->callback(
+$table->property(
 	PHPTables\TYPE_CELL, 
 	'value',
-	function($cell) use ($data)
+	function($cell)
 	{
-		return @$data[$cell->row->index][$cell->column->index];
+		return 'foobar';
 	}
 );
 ```
@@ -71,13 +63,11 @@ Return a false or a PHPTables\SKIP to skip the rendering of the cell.
 ### Example
 
 ```php
-$table = new PHPTables\Tables\Collapsed(7, 4);
-
 $table->map(
 	'*,last',
 	function($cell)
 	{
-		return ($cell->value = $cell->column->total); // Total the column, using callbacks. Guaranteed to run only once.
+		return $cell->column->index . ', ' . $cell->row->index;
 	},
 	array(
 		PHPTables\TYPE_CELL => array(
@@ -110,8 +100,6 @@ You are able to expand a cell on the rendering of the cell. Note that selecting 
 On rendering this cell covers (4, 1), (5, 1), (4, 2), and (5, 2). Selecting the cell at (5, 2) will not return the expanded cell, but the underlying cell on the grid. This is built for convenience, so you can calculate sums and averages on straight columns and rows (i.e. the underlying structure) and not on the rendered layout.
 
 ```php
-$table = new PHPTables\Tables\Collapsed(7, 4);
-
 $expandedCell = $table->cell(4, 1)->expand(2, 2);
 
 // Selects the cell on the grid, not the expanded cell.
@@ -171,7 +159,7 @@ $data = array(
 
 $table = new PHPTables\Tables\Collapsed(7, 4); // X x Y.
 
-$table->callback(
+$table->property(
 	PHPTables\TYPE_CELL, 
 	'value',
 	function($cell) use ($data)
@@ -180,7 +168,7 @@ $table->callback(
 	}
 );
 
-$table->callback(
+$table->property(
 	PHPTables\TYPE_COLUMN, 
 	'total',
 	function($column)
@@ -196,7 +184,7 @@ $table->callback(
 	}
 );
 
-$table->callback(
+$table->property(
 	PHPTables\TYPE_ROW, 
 	'total',
 	function($row)
