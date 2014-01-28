@@ -299,7 +299,7 @@ class Cell extends AmorphousElement
 			);
 		}		
 		
-		echo $this->beginElement() . ($render !== PHPTables\SKIP ? $render : '&nbsp;') . $this->endElement();
+		echo $this->beginElement() . $render . $this->endElement();
 	}
 };
 
