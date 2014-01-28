@@ -652,13 +652,11 @@ class Body extends Section { };
 class Header extends HeaderSection
 {
 	protected $_tag = PHPTables\HTML_TAG_THEAD;
-	protected $_cellTag = PHPTables\HTML_TAG_TH;
 }
 
 class Footer extends HeaderSection
 {
 	protected $_tag = PHPTables\HTML_TAG_TFOOT;
-	protected $_cellTag = PHPTables\HTML_TAG_TH;
 };
 
 namespace PHPTables\Tables;
