@@ -56,7 +56,7 @@ class AmorphousElement extends PHPTables\Amorphous
 	protected $_tag = null;
 	protected $_attributes = array();
 	
-	public function setAttribute($attribute, $callback)
+	public function attribute($attribute, $callback)
 	{
 		if (is_callable($callback))
 		{
@@ -69,7 +69,7 @@ class AmorphousElement extends PHPTables\Amorphous
 		}
 	}
 	
-	public function getAttributes()
+	public function attributes()
 	{
 		$rtn = array();
 		
@@ -91,7 +91,7 @@ class AmorphousElement extends PHPTables\Amorphous
 	protected function _getAttributeString()
 	{
 		$rtn = '';
-		$attributes = $this->getAttributes();
+		$attributes = $this->attributes();
 	
 		foreach ($attributes as $attribute => $value)
 		{
@@ -245,11 +245,11 @@ class Cell extends AmorphousElement
 		}
 	}
 	
-	public function getAttributes()
+	public function attributes()
 	{
 		$rtn = array();
 		
-		$columnAttributes = $this->column->getAttributes();
+		$columnAttributes = $this->column->attributes();
 		
 		foreach ($this->_attributes as $attribute => $list)
 		{
@@ -279,7 +279,7 @@ class Cell extends AmorphousElement
 		
 		if ($this->columns > 1)
 		{
-			$this->setAttribute(
+			$this->attribute(
 				'colspan', 
 				function($cell)
 				{
@@ -290,7 +290,7 @@ class Cell extends AmorphousElement
 		
 		if ($this->rows > 1)
 		{
-			$this->setAttribute(
+			$this->attribute(
 				'rowspan', 
 				function($cell)
 				{
@@ -533,7 +533,7 @@ class Section extends PHPTables\Types\AmorphousElement
 				{
 					foreach ($attributes[PHPTables\TYPE_CELL] as $attribute => $callback)
 					{
-						$cell->setAttribute($attribute, $callback);
+						$cell->attribute($attribute, $callback);
 					}
 				}
 				
@@ -544,7 +544,7 @@ class Section extends PHPTables\Types\AmorphousElement
 					
 					foreach ($attributes[PHPTables\TYPE_ROW] as $attribute => $callback)
 					{
-						$row->setAttribute($attribute, $callback);
+						$row->attribute($attribute, $callback);
 					}
 				}
 			}
@@ -559,7 +559,7 @@ class Section extends PHPTables\Types\AmorphousElement
 				
 				foreach ($attributes[PHPTables\TYPE_COLUMN] as $attribute => $callback)
 				{
-					$column->setAttribute($attribute, $callback);
+					$column->attribute($attribute, $callback);
 				}
 			}
 		}
@@ -569,7 +569,7 @@ class Section extends PHPTables\Types\AmorphousElement
 		{
 			foreach ($attributes[PHPTables\TYPE_SECTION] as $attribute => $callback)
 			{
-				$this->setAttribute($attribute, $callback);
+				$this->attribute($attribute, $callback);
 			}
 		}
 		
@@ -580,7 +580,7 @@ class Section extends PHPTables\Types\AmorphousElement
 			
 			foreach ($attributes[PHPTables\TYPE_TABLE] as $attribute => $callback)
 			{
-				$table->setAttribute($attribute, $callback);
+				$table->attribute($attribute, $callback);
 			}			
 		}
 	}
