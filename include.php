@@ -662,7 +662,8 @@ class Footer extends HeaderSection
 namespace PHPTables\Tables;
 use PHPTables;
 
-class Table extends PHPTables\Sections\Section {
+class Table extends PHPTables\Sections\Section 
+{
 	protected $_tag = PHPTables\HTML_TAG_TABLE;
 };
 
