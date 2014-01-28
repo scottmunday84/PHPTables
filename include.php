@@ -753,6 +753,6 @@ class HBF extends Table
 			$this->_footer->render();
 		}
 		
-		echo $this->endElement();
+		echo $this->endElement() . PHP_EOL;
 	}
 };
