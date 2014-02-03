@@ -754,3 +754,60 @@ class HBF extends Table
 		echo $this->endElement() . PHP_EOL;
 	}
 };
+
+class MySQLTable extends HBF
+{
+	function __construct($result)
+	{
+		parent::__construct();
+		
+		// Setup header and body.
+		if (($rows = mysql_num_rows($result)))
+		{
+			$keys = array_keys(mysql_fetch_assoc($result));
+			mysql_data_seek($result, 0);
+			
+			$header = $this->header(count($keys), 1);
+			$body = $this->body(count($keys), $rows);
+			
+			// Setup initial properties/mappings.
+			$header->property(
+				PHPTables\TYPE_COLUMN,
+				'key',
+				function($column) use ($keys)
+				{
+					return $keys[$column->index];
+				}
+			);
+			
+			$header->map(
+				'*,*',
+				function($cell)
+				{
+					return $cell->column->key;
+				}
+			);
+			
+			$body->property(
+				PHPTables\TYPE_CELL,
+				'value',
+				function($cell) use (&$result)
+				{
+					mysql_data_seek($result, $cell->row->index);
+					
+					$row = mysql_fetch_row($result);
+					
+					return $row[$cell->column->index];
+				}
+			);
+			
+			$body->map(
+				'*,*',
+				function($cell)
+				{
+					return $cell->value;
+				}
+			);
+		}			
+	}
+};
