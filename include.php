@@ -56,6 +56,8 @@ class AmorphousElement extends PHPTables\Amorphous
 	protected $_tag = null;
 	protected $_attributes = array();
 	
+	protected $_label = null;
+	
 	public function attribute($attribute, $callback)
 	{
 		if (is_callable($callback))
@@ -101,6 +103,16 @@ class AmorphousElement extends PHPTables\Amorphous
 		}
 		
 		return $rtn;
+	}
+	
+	public function label($label = null)
+	{
+		if ($label)
+		{
+			$this->_label = $label;
+		}
+		
+		return $this->_label;
 	}
 	
 	public function beginElement()
@@ -491,7 +503,7 @@ class Section extends PHPTables\Types\AmorphousElement
 					$tmp = range(1, $max, 2);
 				}
 			}
-			elseif (preg_match('/(0|([1-9][0-9]*))-(0|([1-9][0-9]*))/', $selection)) // Range.
+			elseif (preg_match('/^(0|([1-9][0-9]*))-(0|([1-9][0-9]*))$/', $selection)) // Range.
 			{
 				list($start, $stop) = explode('-', $selection);
 				
@@ -500,7 +512,33 @@ class Section extends PHPTables\Types\AmorphousElement
 				
 				$tmp = range($start, $stop);
 			}
-			elseif (preg_match('/0|[1-9][0-9]*/', $selection)) // Index.
+			elseif (preg_match('/^"(.*?)"$/', $selection)) // Label.
+			{
+				$label = preg_replace('/^"(.*?)"$/', '$1', $selection);
+				
+				// Must find all rows (or columns) that match the label.
+				if ($type == PHPTables\TYPE_COLUMN)
+				{
+					for ($i = 0; $i < $max; ++$i)
+					{
+						if ($this->column($i)->label() == $label)
+						{
+							$tmp[] = $i;
+						}
+					}
+				}
+				elseif ($type == PHPTables\TYPE_ROW)
+				{
+					for ($i = 0; $i < $max; ++$i)
+					{
+						if ($this->row($i)->label() == $label)
+						{
+							$tmp[] = $i;
+						}
+					}
+				}
+			}
+			elseif (preg_match('/^(0|[1-9][0-9]*)$/', $selection)) // Index.
 			{
 				if ($selection >= 0 && $selection <= $max) { $tmp = array($selection); }
 			}
@@ -780,11 +818,31 @@ class MySQLTable extends HBF
 				}
 			);
 			
+			// Establish header/body's column label.
+			foreach ($keys as $index => $key)
+			{				
+				$header->column($index)->label($key);
+				$body->column($index)->label($key);
+			}
+			
 			$header->map(
 				'*,*',
 				function($cell)
-				{
+				{					
 					return $cell->column->key;
+				}
+			);
+			
+			$body->property(
+				PHPTables\TYPE_ROW,
+				'data',
+				function($row) use (&$result)
+				{
+					mysql_data_seek($result, $row->index);
+					
+					return mysql_fetch_assoc($result);
+					
+					return $row[$cell->column->index];
 				}
 			);
 			
