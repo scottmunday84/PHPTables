@@ -439,7 +439,7 @@ class Section extends PHPTables\Types\AmorphousElement
 		}
 	}
 	
-	public function properties($type)
+	public function &properties($type)
 	{
 		switch ($type)
 		{
@@ -866,6 +866,11 @@ class MySQLTable extends HBF
 					return $cell->value;
 				}
 			);
-		}			
+		}
+		else
+		{
+			$this->header(0, 0);
+			$this->body(0, 0);
+		}
 	}
 };
